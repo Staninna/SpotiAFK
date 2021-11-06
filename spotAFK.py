@@ -79,6 +79,7 @@ PLAYLIST_NAME = options.PLAYLIST_NAME
 CYCLE_TIME = options.CYCLE_TIME
 UPDATE_PLAYLIST = options.UPDATE_PLAYLIST
 RANDOM_ORDER_SONGS = options.RANDOM_ORDER_SONGS
+SKIP_DELAY = options.SKIP_DELAY
 
 # FUNCTIONS
 
@@ -132,13 +133,18 @@ Spotify.auth()
 while True:
     playlist = update_playlist()
     length_playlist = len(playlist)
-    print("updated")
+    print("update")
     if RANDOM_ORDER_SONGS:
         random.shuffle(playlist)
     for i in range(UPDATE_PLAYLIST):
-        time.sleep(CYCLE_TIME)
         can_play, device_id = can_i_play()
+        print("check")
         if can_play:
-            print("playing")
+            print("play")
             Spotify.client.start_playback(device_id=device_id, uris=playlist)
-        
+            for _ in range(len(playlist)):
+                if SKIP_DELAY != 0:
+                    print("skip")
+                    time.sleep(SKIP_DELAY)
+                    Spotify.client.next_track()
+        time.sleep((abs((CYCLE_TIME - (len(playlist) * SKIP_DELAY))) + (CYCLE_TIME - (len(playlist) * SKIP_DELAY))) / 2)
