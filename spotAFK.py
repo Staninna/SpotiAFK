@@ -1,16 +1,9 @@
 # CLIENT SECRETS
-import secrets
+import options
 
-import spotipy, os, json
+import spotipy, os, time, random
 
 class SpotifyAPI(object):
-    client_id = None
-    client_secret = None
-    redirect_uri = None
-    username = None
-    scope = None
-    tokens_path = None
-    
     def __init__(self,
                  client_id      : str,
                  client_secret  : str,
@@ -45,7 +38,7 @@ class SpotifyAPI(object):
             pickled (bool, optional): Defines if token get saved as plain text or not. Defaults to True.
         """
         if pickled:
-            import pickle
+            import pickle, json
             if os.path.isfile(self.tokens_path):
                 with open(self.tokens_path, "rb") as token_file:
                     token = pickle.load(token_file)
@@ -65,11 +58,11 @@ class SpotifyAPI(object):
             self.token = spotipy.util.prompt_for_user_token(self.username, self.scope, self.client_id, self.client_secret, self.redirect_uri, self.tokens_path,)
         self.client = spotipy.Spotify(auth=self.token)
 
-client_id = secrets.CLIENT_ID
-client_secret = secrets.CLIENT_SECRET
+client_id = options.CLIENT_ID
+client_secret = options.CLIENT_SECRET
 redirect_uri = "http://localhost:8888/callback/"
 username = "Staninna"
-scope = "user-read-currently-playing user-modify-playback-state playlist-read-private user-read-private user-read-playback-state"
+scope = "user-modify-playback-state playlist-read-private user-read-playback-state"
 tokens_path = f"{os.path.dirname(os.path.realpath(__file__))}/token.dat"
 Spotify = SpotifyAPI(client_id,
                      client_secret,
@@ -81,39 +74,71 @@ Spotify = SpotifyAPI(client_id,
 
 # SETTINGS
 
-SERVER_NAME = "AFK_SPOTIFY_CLIENT"
-PLAYLIST_NAME = "AFK_PLAYLIST"
-PLAYLIST_LIMIT = 50
+SERVER_NAME = options.SERVER_NAME
+PLAYLIST_NAME = options.PLAYLIST_NAME
+CYCLE_TIME = options.CYCLE_TIME
+UPDATE_PLAYLIST = options.UPDATE_PLAYLIST
+RANDOM_ORDER_SONGS = options.RANDOM_ORDER_SONGS
 
-# LOGIC CODE
+# FUNCTIONS
+
+def can_i_play() -> list:
+    devices = Spotify.client.devices()
+    active_devices = 0
+    for device in devices["devices"]:
+        if device["name"] == SERVER_NAME:
+            server_id = device["id"]
+        if device["is_active"]:
+            active_devices += 1
+        else:
+            pass
+    if active_devices > 0 and Spotify.client.current_user_playing_track()["is_playing"]:
+        return [False, "dQw4w9WgXcQ"]
+    else:
+        return [True, server_id]
+
+def update_playlist() -> list:
+    playlists = Spotify.client.current_user_playlists()
+    playlist_found = False
+    while playlists:
+        for playlist in playlists["items"]:
+            if playlist["name"] == PLAYLIST_NAME:
+                playlist_found = True
+                tracks = Spotify.client.playlist(playlist["id"])["tracks"]
+                if len(tracks["items"]) == 0:
+                    raise Exception("Playlist doesn't coinain any tracks to AFK")
+                playlist_track_uris = list()
+                while tracks:
+                    for track in tracks["items"]:
+                        playlist_track_uris.append(track["track"]["uri"])
+                    if tracks["next"]:
+                        tracks = Spotify.client.next(tracks)
+                    else:
+                        tracks = None
+                break
+        if playlist_found:
+            break
+        elif playlists["next"]:
+            playlists = Spotify.client.next(playlists)
+        else:
+            playlists = None
+    if not playlist_found:
+        raise Exception("Your selected playlist does not exist")
+    return playlist_track_uris
 
 Spotify.auth()
 
-devices = Spotify.client.devices()
-device_found = False
-for device in devices["devices"]:
-    if device["name"] == SERVER_NAME:
-        device_found = True
-        device_id = device["id"]
-        device_name = device["name"]
-        break
-if not device_found:
-    raise Exception("Your selected device does not exist or is offline")
-
-total_playlists = Spotify.client.current_user_playlists(limit=0)["total"]
-offset = 0
-playlist_found = False
-while offset != total_playlists:
-    playlists = Spotify.client.current_user_playlists(limit=PLAYLIST_LIMIT, offset=offset)["items"]
-    for playlist in playlists:
-        if playlist["name"] == PLAYLIST_NAME:
-            playlist_found = True
-            offset = total_playlists
-            playlist_id = playlist["id"]
-            playlist_name = playlist["name"]
-            break
-        offset += 1
-if not playlist_found:
-    raise Exception("Your selected playlist does not exist")
-
-playing = Spotify.client.current_user_playing_track()["is_playing"]
+# MAIN LOOP
+while True:
+    playlist = update_playlist()
+    length_playlist = len(playlist)
+    print("updated")
+    if RANDOM_ORDER_SONGS:
+        random.shuffle(playlist)
+    for i in range(UPDATE_PLAYLIST):
+        time.sleep(CYCLE_TIME)
+        can_play, device_id = can_i_play()
+        if can_play:
+            print("playing")
+            Spotify.client.start_playback(device_id=device_id, uris=playlist)
+        
