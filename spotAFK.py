@@ -83,7 +83,7 @@ SKIP_DELAY = options.SKIP_DELAY
 
 # FUNCTIONS
 
-def can_i_play_or_skip() -> bool:
+def can_i_skip() -> bool:
     devices = Spotify.client.devices()
     for device in devices["devices"]:
         if device["is_active"]:
@@ -137,21 +137,26 @@ for device in devices["devices"]:
 while True:
     playlist = update_playlist()
     length_playlist = len(playlist)
-    print("update")
     if RANDOM_ORDER_SONGS:
         random.shuffle(playlist)
     for i in range(UPDATE_PLAYLIST):
-        print("check")
         skip_index = 0
-        if can_i_play_or_skip():
-            print("play")
+        waited = False
+        if not Spotify.client.current_user_playing_track()["is_playing"]:
             Spotify.client.start_playback(device_id=server_id, uris=playlist)
             for skip_index in range(len(playlist)):
                 if SKIP_DELAY != 0:
-                    print("skip")
                     time.sleep(SKIP_DELAY)
-                    if can_i_play_or_skip():
+                    if can_i_skip():
                         Spotify.client.next_track()
                     else:
                         break
-        time.sleep((abs((CYCLE_TIME) - (skip_index * SKIP_DELAY)) + (CYCLE_TIME) - (skip_index * SKIP_DELAY)) / 2)
+            if SKIP_DELAY != 0:
+                time.sleep(SKIP_DELAY)
+                Spotify.client.pause_playback()
+                waited = True
+            else:
+                time.sleep((abs((CYCLE_TIME) - (skip_index * SKIP_DELAY)) + (CYCLE_TIME) - (skip_index * SKIP_DELAY)) / 2)
+                waited = True
+        if not waited:
+            time.sleep(CYCLE_TIME)

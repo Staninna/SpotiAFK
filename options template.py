@@ -10,4 +10,4 @@ RANDOM_ORDER_SONGS = True                           # Do you want to randomize t
 
 # There also some things i didn't mention in this file about timings becomeing really long depending on your length of your afk playlist and enabling track skipping
 
-# rename tis file to options.py
+# rename this file to options.py
