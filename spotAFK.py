@@ -1,7 +1,7 @@
 # CLIENT SECRETS
 import options
 
-import spotipy, os, time, random
+import spotipy, os, time, random, json
 
 class SpotifyAPI(object):
     def __init__(self,
@@ -38,7 +38,7 @@ class SpotifyAPI(object):
             pickled (bool, optional): Defines if token get saved as plain text or not. Defaults to True.
         """
         if pickled:
-            import pickle, json
+            import pickle
             if os.path.isfile(self.tokens_path):
                 with open(self.tokens_path, "rb") as token_file:
                     token = pickle.load(token_file)
@@ -83,20 +83,18 @@ SKIP_DELAY = options.SKIP_DELAY
 
 # FUNCTIONS
 
-def can_i_play() -> list:
+def can_i_play_or_skip() -> bool:
     devices = Spotify.client.devices()
-    active_devices = 0
     for device in devices["devices"]:
-        if device["name"] == SERVER_NAME:
-            server_id = device["id"]
         if device["is_active"]:
-            active_devices += 1
-        else:
-            pass
-    if active_devices > 0 and Spotify.client.current_user_playing_track()["is_playing"]:
-        return [False, "dQw4w9WgXcQ"]
-    else:
-        return [True, server_id]
+            if device["name"] == SERVER_NAME:
+                return True
+            else:
+                if not Spotify.client.current_user_playing_track()["is_playing"]:
+                    return True
+                else:
+                    return False
+    return True
 
 def update_playlist() -> list:
     playlists = Spotify.client.current_user_playlists()
@@ -107,7 +105,7 @@ def update_playlist() -> list:
                 playlist_found = True
                 tracks = Spotify.client.playlist(playlist["id"])["tracks"]
                 if len(tracks["items"]) == 0:
-                    raise Exception("Playlist doesn't coinain any tracks to AFK")
+                    raise Exception("Playlist doesn't coinain any tracks to afk")
                 playlist_track_uris = list()
                 while tracks:
                     for track in tracks["items"]:
@@ -129,6 +127,12 @@ def update_playlist() -> list:
 
 Spotify.auth()
 
+devices = Spotify.client.devices()
+for device in devices["devices"]:
+    if device["name"] == SERVER_NAME:
+        server_id = device["id"]
+        break
+
 # MAIN LOOP
 while True:
     playlist = update_playlist()
@@ -137,14 +141,17 @@ while True:
     if RANDOM_ORDER_SONGS:
         random.shuffle(playlist)
     for i in range(UPDATE_PLAYLIST):
-        can_play, device_id = can_i_play()
         print("check")
-        if can_play:
+        skip_index = 0
+        if can_i_play_or_skip():
             print("play")
-            Spotify.client.start_playback(device_id=device_id, uris=playlist)
-            for _ in range(len(playlist)):
+            Spotify.client.start_playback(device_id=server_id, uris=playlist)
+            for skip_index in range(len(playlist)):
                 if SKIP_DELAY != 0:
                     print("skip")
                     time.sleep(SKIP_DELAY)
-                    Spotify.client.next_track()
-        time.sleep((abs((CYCLE_TIME - (len(playlist) * SKIP_DELAY))) + (CYCLE_TIME - (len(playlist) * SKIP_DELAY))) / 2)
+                    if can_i_play_or_skip():
+                        Spotify.client.next_track()
+                    else:
+                        break
+        time.sleep((abs((CYCLE_TIME) - (skip_index * SKIP_DELAY)) + (CYCLE_TIME) - (skip_index * SKIP_DELAY)) / 2)
