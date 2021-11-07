@@ -70,7 +70,7 @@ Spotify = SpotifyAPI(client_id,
                      username,
                      scope,
                      tokens_path)
-Spotify.auth()
+
 
 # SETTINGS
 
@@ -81,7 +81,83 @@ UPDATE_PLAYLIST = options.UPDATE_PLAYLIST
 RANDOM_ORDER_SONGS = options.RANDOM_ORDER_SONGS
 SKIP_DELAY = options.SKIP_DELAY
 
-# CODE
+# FUNCTIONS
 
-# TODO GET DEVICE_ID OF SERVER_NAME
+def can_i_skip() -> bool:
+    devices = Spotify.client.devices()
+    for device in devices["devices"]:
+        if device["is_active"]:
+            if device["name"] == SERVER_NAME:
+                return True
+            else:
+                if not Spotify.client.current_user_playing_track()["is_playing"]:
+                    return True
+                else:
+                    return False
+    return True
 
+def update_playlist() -> list:
+    playlists = Spotify.client.current_user_playlists()
+    playlist_found = False
+    while playlists:
+        for playlist in playlists["items"]:
+            if playlist["name"] == PLAYLIST_NAME:
+                playlist_found = True
+                tracks = Spotify.client.playlist(playlist["id"])["tracks"]
+                if len(tracks["items"]) == 0:
+                    raise Exception("Playlist doesn't coinain any tracks to afk")
+                playlist_track_uris = list()
+                while tracks:
+                    for track in tracks["items"]:
+                        playlist_track_uris.append(track["track"]["uri"])
+                    if tracks["next"]:
+                        tracks = Spotify.client.next(tracks)
+                    else:
+                        tracks = None
+                break
+        if playlist_found:
+            break
+        elif playlists["next"]:
+            playlists = Spotify.client.next(playlists)
+        else:
+            playlists = None
+    if not playlist_found:
+        raise Exception("Your selected playlist does not exist")
+    return playlist_track_uris
+
+Spotify.auth()
+
+devices = Spotify.client.devices()
+for device in devices["devices"]:
+    if device["name"] == SERVER_NAME:
+        server_id = device["id"]
+        break
+
+# MAIN LOOP
+# TODO REWRITE
+while True:
+    playlist = update_playlist()
+    length_playlist = len(playlist)
+    if RANDOM_ORDER_SONGS:
+        random.shuffle(playlist)
+    for i in range(UPDATE_PLAYLIST):
+        skip_index = 0
+        waited = False
+        if not Spotify.client.current_user_playing_track()["is_playing"]:
+            Spotify.client.start_playback(device_id=server_id, uris=playlist)
+            for skip_index in range(len(playlist)):
+                if SKIP_DELAY != 0:
+                    time.sleep(SKIP_DELAY)
+                    if can_i_skip():
+                        Spotify.client.next_track()
+                    else:
+                        break
+            if SKIP_DELAY != 0:
+                time.sleep(SKIP_DELAY)
+                Spotify.client.pause_playback()
+                waited = True
+            else:
+                time.sleep((abs((CYCLE_TIME) - (skip_index * SKIP_DELAY)) + (CYCLE_TIME) - (skip_index * SKIP_DELAY)) / 2)
+                waited = True
+        if not waited:
+            time.sleep(CYCLE_TIME)
