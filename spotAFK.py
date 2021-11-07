@@ -1,7 +1,7 @@
 # CLIENT SECRETS
 import options
 
-import spotipy, os, time, random, json
+import spotipy, os, time, random, json, logging, datetime
 
 class SpotifyAPI(object):
     def __init__(self,
@@ -83,7 +83,6 @@ RANDOM_ORDER_TRACKS = options.RANDOM_ORDER_TRACKS
 SKIP_SONGS = options.SKIP_SONGS
 SKIP_DELAY = options.SKIP_DELAY
 
-
 # CODE
 
 # FUNCTIONS
@@ -123,6 +122,15 @@ def update_playlist():
         random.shuffle(tracks_to_play)
     return tracks_to_play
 
+# Making Log File
+date = datetime.datetime.now()
+logging.basicConfig(filename=f"logs/{date.day}-{date.month}-{date.year}_{date.hour}-{date.minute}-{date.second}.log", # Filename https://stackoverflow.com/questions/9135936/how-do-you-add-datetime-to-a-logfile-name
+                    level=logging.INFO, #On what level do you wanna log
+                    format="%(asctime)s %(levelname)s: %(message)s", # logging format https://docs.python.org/3/howto/logging.html#changing-the-format-of-displayed-messages
+                    datefmt='%d/%m/%Y %H:%M:%S' # Time/Date format https://docs.python.org/3/howto/logging.html#displaying-the-date-time-in-messages
+                    )
+logging.info("Started the program")
+
 # Get Server ids
 devices = Spotify.client.devices()
 for device in devices["devices"]:
@@ -134,20 +142,24 @@ succes_checks = 0
 while True:
     try:
         time.sleep(TIME_BETWEEN_CHEAKS)
+        logging.info(f"Waited {TIME_BETWEEN_CHEAKS} seconds")
         succes_checks = can_i_play(succes_checks)
         while succes_checks >= CHEAKS_BEFORE_PLAYING:
             Spotify.client.transfer_playback(server_id, False)
+            logging.info("Started playing")
             tracks = update_playlist()
             for track, duration in tracks:
-                if can_i_play(0) == 0:
+                if can_i_play(0) == 0:                    
+                    logging.info("Stopped playing")
                     break
                 Spotify.client.add_to_queue(track)
                 Spotify.client.next_track()
                 if SKIP_SONGS:
                     time.sleep(SKIP_DELAY)
+                    logging.info("Skipped a track")
                 else:
                     time.sleep(duration)
             time.sleep(TIME_BETWEEN_CHEAKS)
             succes_checks = can_i_play(succes_checks)
     except Exception as e:
-        print(e)
+        logging.error(f"{datetime.datetime.now()}: {e}")
