@@ -1,9 +1,15 @@
-# CLIENT SECRETS
+# Imports
+import os
+import time
+import random
 import options
+import spotipy
+import logging
+import datetime
+import requests
 
-import spotipy, os, time, random, json, logging, datetime
-
-class SpotifyAPI(object):
+# API Class
+class API(object):
     def __init__(self,
                  client_id      : str,
                  client_secret  : str,
@@ -31,135 +37,193 @@ class SpotifyAPI(object):
         self.tokens_path = tokens_path
     
     def auth(self,
-             pickled : bool = True) -> None:
-        """Function that authorizes your class
+             retry_time : float) -> None:
+        while True:
+            try:
+                if hasattr(self, 'token'):
+                    old_token = self.token
+                else:
+                    old_token = str()
+                    logging.info("Getting token for first time")
+                self.token = spotipy.prompt_for_user_token(self.username,
+                                                        self.scope,
+                                                        self.client_id,
+                                                        self.client_secret,
+                                                        self.redirect_uri,
+                                                        self.tokens_path)
+                if old_token != self.token:
+                    logging.info(f"New token is {self.token}")
+                else:
+                    logging.info("Tried to renew token but was't necessary cause can be internet outage")
+                self.client = spotipy.Spotify(self.token)
+                break
+            except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+                logging.info("No internet connection found while trying to get authenticated")
+                time.sleep(retry_time)
+                logging.info("Retrying to get authenticated")
 
-        Args:
-            pickled (bool, optional): Defines if token get saved as plain text or not. Defaults to True.
-        """
-        if pickled:
-            import pickle
-            if os.path.isfile(self.tokens_path):
-                with open(self.tokens_path, "rb") as token_file:
-                    token = pickle.load(token_file)
-                    token_file.close()
-                with open(self.tokens_path, "w") as token_file:
-                    json.dump(token, token_file)
-                    token_file.close()
-                self.token = spotipy.util.prompt_for_user_token(self.username, self.scope, self.client_id, self.client_secret, self.redirect_uri, self.tokens_path,)
-                pickle.dump(token, open(self.tokens_path, "wb", pickle.HIGHEST_PROTOCOL))
-            else:
-                self.token = spotipy.util.prompt_for_user_token(self.username, self.scope, self.client_id, self.client_secret, self.redirect_uri, self.tokens_path,)
-                with open(self.tokens_path) as token_file:
-                    cache = json.load(token_file)
-                    token_file.close()
-                pickle.dump(cache, open(self.tokens_path, "wb", pickle.HIGHEST_PROTOCOL))
-        else:
-            self.token = spotipy.util.prompt_for_user_token(self.username, self.scope, self.client_id, self.client_secret, self.redirect_uri, self.tokens_path,)
-        self.client = spotipy.Spotify(auth=self.token)
-
+# TODO IDK WHAT YET
 client_id = options.CLIENT_ID
 client_secret = options.CLIENT_SECRET
 redirect_uri = "http://localhost:8888/callback/"
 username = "Staninna"
 scope = "user-modify-playback-state playlist-read-private user-read-playback-state"
-tokens_path = f"{os.path.dirname(os.path.realpath(__file__))}/token.dat"
-Spotify = SpotifyAPI(client_id,
-                     client_secret,
-                     redirect_uri,
-                     username,
-                     scope,
-                     tokens_path)
-Spotify.auth()
+token_path = f"{os.path.dirname(os.path.realpath(__file__))}/token-{username}.dat"
+Spotify = API(client_id,
+              client_secret,
+              redirect_uri,
+              username,
+              scope,
+              token_path)
 
 
 # SETTINGS
 
-SERVER_NAMES = options.SERVER_NAMES
+SERVER_NAME = options.SERVER_NAME
 PLAYLIST_NAME = options.PLAYLIST_NAME
 TIME_BETWEEN_CHEAKS = options.TIME_BETWEEN_CHEAKS
 CHEAKS_BEFORE_PLAYING = options.CHEAKS_BEFORE_PLAYING
 RANDOM_ORDER_TRACKS = options.RANDOM_ORDER_TRACKS
 SKIP_SONGS = options.SKIP_SONGS
 SKIP_DELAY = options.SKIP_DELAY
+RETRY_TIME = options.RETRY_TIME
 
-# CODE
+# Code
 
-# FUNCTIONS
-
-def can_i_play(succes_checks):
-    try:
-        if Spotify.client.current_user_playing_track()["is_playing"]:  
-                for device in Spotify.client.devices()["devices"]:
-                    if device["is_active"]:
-                        if device["name"] in SERVER_NAMES:
-                            succes_checks += 1
-                        else:
-                            succes_checks = 0
-        else:
+# Functions
+def can_i_play(succes_checks    : int,
+               retry_time       : float,):
+    while True:
+        try:
+            if Spotify.client.current_user_playing_track()["is_playing"]:  
+                    for device in Spotify.client.devices()["devices"]:
+                        if device["is_active"]:
+                            if device["name"] in SERVER_NAME:
+                                succes_checks += 1
+                                break
+                            else:
+                                succes_checks = 0
+                                break
+            else:
+                succes_checks += 1
+            break
+        except TypeError:
             succes_checks += 1
-    except TypeError:
-        succes_checks += 1
+            break
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+            logging.info("No internet connection found while checking if server could play tracks")
+            time.sleep(retry_time)
+            logging.info("Retrying checking if server could play tracks")
     return succes_checks
 
-def update_playlist():
-    playlists = Spotify.client.current_user_playlists()
-    for playlist in playlists["items"]:
-        if playlist["name"] == PLAYLIST_NAME:
-            tracks = Spotify.client.playlist(playlist["id"])["tracks"]
-            tracks_to_play = list()
-            while tracks:
-                for track in tracks["items"]:
-                    duration_sec = track["track"]["duration_ms"] / 1000
-                    uri = track["track"]["uri"]
-                    tracks_to_play.append([uri, duration_sec])
-                if tracks["next"]:
-                    tracks = Spotify.client.next(tracks)
-                else:
-                    tracks = None
+def update_playlist(retry_time  : float):
+    while True:
+        try:
+            playlists = Spotify.client.current_user_playlists()
+            for playlist in playlists["items"]:
+                if playlist["name"] == PLAYLIST_NAME:
+                    tracks = Spotify.client.playlist(playlist["id"])["tracks"]
+                    tracks_to_play = list()
+                    while tracks:
+                        for track in tracks["items"]:
+                            duration_sec = track["track"]["duration_ms"] / 1000
+                            uri = track["track"]["uri"]
+                            tracks_to_play.append([uri, duration_sec])
+                        if tracks["next"]:
+                            tracks = Spotify.client.next(tracks)
+                        else:
+                            tracks = None
+                    break
+            if RANDOM_ORDER_TRACKS:
+                random.shuffle(tracks_to_play)
+            logging.info("Updated playlist")
             break
-    if RANDOM_ORDER_TRACKS:
-        random.shuffle(tracks_to_play)
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+            logging.info("No internet connection found while checking if server could play tracks")
+            time.sleep(retry_time)
+            logging.info("Retrying checking if server could play tracks")
     return tracks_to_play
 
 # Making Log File
 date = datetime.datetime.now()
-logging.basicConfig(filename=f"logs/{date.day}-{date.month}-{date.year}_{date.hour}-{date.minute}-{date.second}.log", # Filename https://stackoverflow.com/questions/9135936/how-do-you-add-datetime-to-a-logfile-name
-                    level=logging.INFO, #On what level do you wanna log
-                    format="%(asctime)s %(levelname)s: %(message)s", # logging format https://docs.python.org/3/howto/logging.html#changing-the-format-of-displayed-messages
-                    datefmt='%d/%m/%Y %H:%M:%S' # Time/Date format https://docs.python.org/3/howto/logging.html#displaying-the-date-time-in-messages
+logging.basicConfig(filename=f"logs/{date.day}-{date.month}-{date.year}_{date.hour}-{date.minute}-{date.second}.log",
+                    level=logging.INFO,
+                    format="%(asctime)s %(levelname)s: %(message)s",
+                    datefmt='%d/%m/%Y %H:%M:%S:'
                     )
 logging.info("Started the program")
 
-# Get Server ids
-devices = Spotify.client.devices()
-for device in devices["devices"]:
-    if device["name"] == SERVER_NAMES:
-        server_id = device["id"]
+# Auth
+Spotify.auth(RETRY_TIME)
 
+# Get Server ids
+while True:
+    try:
+        devices = Spotify.client.devices()
+        for device in devices["devices"]:
+            if device["name"] == SERVER_NAME:
+                server_id = device["id"]
+                logging.info(f"Server named {SERVER_NAME} found")
+                break
+        if "server_id" not in locals():
+            logging.info(f"Server named {SERVER_NAME} wasn't found")
+            exit()
+        else:
+            break
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+        logging.info("No internet connection found updating playlist")
+        time.sleep(RETRY_TIME)
+        logging.info("Retrying updateing playlist")
+
+
+# Main loop
 succes_checks = 0
-# MAIN LOOP
+played = False
 while True:
     try:
         time.sleep(TIME_BETWEEN_CHEAKS)
-        logging.info(f"Waited {TIME_BETWEEN_CHEAKS} seconds")
-        succes_checks = can_i_play(succes_checks)
+        succes_checks = can_i_play(succes_checks, RETRY_TIME)
+        if played:
+            played = False
         while succes_checks >= CHEAKS_BEFORE_PLAYING:
-            Spotify.client.transfer_playback(server_id, False)
-            logging.info("Started playing")
-            tracks = update_playlist()
-            for track, duration in tracks:
-                if can_i_play(0) == 0:                    
-                    logging.info("Stopped playing")
+            if not played:
+                logging.info("Started playing tracks")
+                played = True
+            while True:
+                try:
+                    Spotify.client.transfer_playback(server_id, False)
                     break
-                Spotify.client.add_to_queue(track)
-                Spotify.client.next_track()
+                except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+                    logging.info("No internet connection found while transfering playback to server")
+                    time.sleep(RETRY_TIME)
+                    logging.info("Retrying transfering playback to server")
+            tracks = update_playlist(RETRY_TIME)
+            for track, duration in tracks:
+                if can_i_play(0, RETRY_TIME) == 0:                    
+                    logging.info("Stopped playing tracks")
+                    break
+                while True:
+                    try:
+                        Spotify.client.add_to_queue(track)
+                        break
+                    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+                        logging.info("No internet connection found while adding track to queue")
+                        time.sleep(RETRY_TIME)
+                        logging.info("Retrying adding track to queue")
+                while True:
+                    try:
+                        Spotify.client.next_track()
+                        break
+                    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+                        logging.info("No internet connection found while skipping track")
+                        time.sleep(RETRY_TIME)
+                        logging.info("Retrying skipping track")
                 if SKIP_SONGS:
                     time.sleep(SKIP_DELAY)
-                    logging.info("Skipped a track")
                 else:
                     time.sleep(duration)
             time.sleep(TIME_BETWEEN_CHEAKS)
-            succes_checks = can_i_play(succes_checks)
+            succes_checks = can_i_play(succes_checks, RETRY_TIME)
     except Exception as e:
-        logging.error(f"{datetime.datetime.now()}: {e}")
+        logging.error(e)
+        Spotify.auth(RETRY_TIME)
