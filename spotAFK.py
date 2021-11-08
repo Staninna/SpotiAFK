@@ -54,7 +54,7 @@ class API(object):
                 if old_token != self.token:
                     logging.info(f"New token is {self.token}")
                 else:
-                    logging.info("Tried to renew token but was't necessary cause can be internet outage")
+                    logging.info("Tried to renew token but")
                 self.client = spotipy.Spotify(self.token)
                 break
             except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
@@ -63,6 +63,7 @@ class API(object):
                 logging.info("Retrying to get authenticated")
 
 # TODO IDK WHAT YET
+
 client_id = options.CLIENT_ID
 client_secret = options.CLIENT_SECRET
 redirect_uri = "http://localhost:8888/callback/"
@@ -78,6 +79,8 @@ Spotify = API(client_id,
 
 
 # SETTINGS
+
+# TODO Make options gui
 
 SERVER_NAME = options.SERVER_NAME
 PLAYLIST_NAME = options.PLAYLIST_NAME
@@ -128,7 +131,8 @@ def update_playlist(retry_time  : float):
                         for track in tracks["items"]:
                             duration_sec = track["track"]["duration_ms"] / 1000
                             uri = track["track"]["uri"]
-                            tracks_to_play.append([uri, duration_sec])
+                            name = track["track"]["name"]
+                            tracks_to_play.append([uri, duration_sec, name])
                         if tracks["next"]:
                             tracks = Spotify.client.next(tracks)
                         else:
@@ -145,6 +149,8 @@ def update_playlist(retry_time  : float):
     return tracks_to_play
 
 # Making Log File
+if not os.path.isdir("logs"):
+    os.mkdir("logs")
 date = datetime.datetime.now()
 logging.basicConfig(filename=f"logs/{date.day}-{date.month}-{date.year}_{date.hour}-{date.minute}-{date.second}.log",
                     level=logging.INFO,
@@ -198,7 +204,7 @@ while True:
                     time.sleep(RETRY_TIME)
                     logging.info("Retrying transfering playback to server")
             tracks = update_playlist(RETRY_TIME)
-            for track, duration in tracks:
+            for track, duration, name in tracks:
                 if can_i_play(0, RETRY_TIME) == 0:                    
                     logging.info("Stopped playing tracks")
                     break
@@ -222,6 +228,7 @@ while True:
                     time.sleep(SKIP_DELAY)
                 else:
                     time.sleep(duration)
+                logging.info(f"Played {name}")
             time.sleep(TIME_BETWEEN_CHEAKS)
             succes_checks = can_i_play(succes_checks, RETRY_TIME)
     except Exception as e:
