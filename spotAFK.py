@@ -44,7 +44,7 @@ class API(object):
                     old_token = self.token
                 else:
                     old_token = str()
-                    logging.info("Getting token for first time")
+                    log(logging.INFO, "Getting token for first time")
                 self.token = spotipy.prompt_for_user_token(self.username,
                                                         self.scope,
                                                         self.client_id,
@@ -52,15 +52,15 @@ class API(object):
                                                         self.redirect_uri,
                                                         self.tokens_path)
                 if old_token != self.token:
-                    logging.info(f"New token is {self.token}")
+                    log(logging.INFO, f"New token is {self.token}")
                 else:
-                    logging.info("Tried to renew token but")
+                    log(logging.INFO, "Tried to renew token but")
                 self.client = spotipy.Spotify(self.token)
                 break
             except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
-                logging.info("No internet connection found while trying to get authenticated")
+                log(logging.INFO, "No internet connection found while trying to get authenticated")
                 time.sleep(retry_time)
-                logging.info("Retrying to get authenticated")
+                log(logging.INFO, "Retrying to get authenticated")
 
 # TODO IDK WHAT YET
 
@@ -112,9 +112,9 @@ def can_i_play(succes_checks    : int,
             succes_checks += 1
             break
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
-            logging.info("No internet connection found while checking if server could play tracks")
+            log(logging.INFO, "No internet connection found while checking if server could play tracks")
             time.sleep(retry_time)
-            logging.info("Retrying checking if server could play tracks")
+            log(logging.INFO, "Retrying checking if server could play tracks")
     return succes_checks
 
 def update_playlist(retry_time  : float):
@@ -138,12 +138,12 @@ def update_playlist(retry_time  : float):
                     break
             if RANDOM_ORDER_TRACKS:
                 random.shuffle(tracks_to_play)
-            logging.info("Updated playlist")
+            log(logging.INFO, "Updated playlist")
             break
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
-            logging.info("No internet connection found while checking if server could play tracks")
+            log(logging.INFO, "No internet connection found while checking if server could play tracks")
             time.sleep(retry_time)
-            logging.info("Retrying checking if server could play tracks")
+            log(logging.INFO, "Retrying checking if server could play tracks")
     return tracks_to_play
 
 def get_server_ids():
@@ -155,16 +155,16 @@ def get_server_ids():
                 if device["name"] in SERVER_NAMES:
                     server_id = device["id"]
                     server_ids.append(server_id)
-                    logging.info(f"Server named {server_id} found")
+                    log(logging.INFO, f"Server named {server_id} found")
             if "server_id" not in locals():
-                logging.info(f"The servers {SERVER_NAMES} were not found")
+                log(logging.INFO, f"The servers {SERVER_NAMES} were not found")
                 exit()
             else:
                 break
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
-            logging.info("No internet connection found updating playlist")
+            log(logging.INFO, "No internet connection found updating playlist")
             time.sleep(RETRY_TIME)
-            logging.info("Retrying updateing playlist")
+            log(logging.INFO, "Retrying updateing playlist")
     return server_ids
 
 def log(level, 
