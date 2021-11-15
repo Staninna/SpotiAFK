@@ -195,6 +195,7 @@ while True:
     try:
         time.sleep(TIME_BETWEEN_CHEAKS)
         succes_checks = can_i_play(succes_checks, RETRY_TIME)
+        log(logging.INFO, f"Checked if i could play success rate is [{succes_checks}/{CHEAKS_BEFORE_PLAYING}]")
         if played:
             played = False
         while succes_checks >= CHEAKS_BEFORE_PLAYING:
