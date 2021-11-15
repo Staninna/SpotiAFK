@@ -54,7 +54,7 @@ class API(object):
                 if old_token != self.token:
                     log(logging.INFO, f"New token is {self.token}")
                 else:
-                    log(logging.INFO, "Tried to renew token but")
+                    log(logging.INFO, "Tried to renew token but token was still valid")
                 self.client = spotipy.Spotify(self.token)
                 break
             except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
