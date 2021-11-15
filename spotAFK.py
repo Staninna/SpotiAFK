@@ -82,7 +82,7 @@ Spotify = API(client_id,
 
 # TODO Make options gui
 
-SERVER_NAME = options.SERVER_NAME
+SERVER_NAMES = options.SERVER_NAMES
 PLAYLIST_NAME = options.PLAYLIST_NAME
 TIME_BETWEEN_CHEAKS = options.TIME_BETWEEN_CHEAKS
 CHEAKS_BEFORE_PLAYING = options.CHEAKS_BEFORE_PLAYING
@@ -148,6 +148,27 @@ def update_playlist(retry_time  : float):
             logging.info("Retrying checking if server could play tracks")
     return tracks_to_play
 
+def get_server_ids():
+    server_ids = list()
+    while True:
+        try:
+            devices = Spotify.client.devices()
+            for device in devices["devices"]:
+                if device["name"] in SERVER_NAMES:
+                    server_id = device["id"]
+                    server_ids.append(server_id)
+                    logging.info(f"Server named {server_id} found")
+            if "server_id" not in locals():
+                logging.info(f"The servers {SERVER_NAMES} were not found")
+                exit()
+            else:
+                break
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+            logging.info("No internet connection found updating playlist")
+            time.sleep(RETRY_TIME)
+            logging.info("Retrying updateing playlist")
+    return server_ids
+
 # Making Log File
 if not os.path.isdir("logs"):
     os.mkdir("logs")
@@ -162,25 +183,7 @@ logging.info("Started the program")
 # Auth
 Spotify.auth(RETRY_TIME)
 
-# Get Server ids
-while True:
-    try:
-        devices = Spotify.client.devices()
-        for device in devices["devices"]:
-            if device["name"] == SERVER_NAME:
-                server_id = device["id"]
-                logging.info(f"Server named {SERVER_NAME} found")
-                break
-        if "server_id" not in locals():
-            logging.info(f"Server named {SERVER_NAME} wasn't found")
-            exit()
-        else:
-            break
-    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
-        logging.info("No internet connection found updating playlist")
-        time.sleep(RETRY_TIME)
-        logging.info("Retrying updateing playlist")
-
+server_ids = get_server_ids()
 
 # Main loop
 succes_checks = 0
@@ -197,7 +200,7 @@ while True:
                 played = True
             while True:
                 try:
-                    Spotify.client.transfer_playback(server_id, False)
+                    Spotify.client.transfer_playback(server_ids[0], False)
                     break
                 except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
                     logging.info("No internet connection found while transfering playback to server")
@@ -234,3 +237,4 @@ while True:
     except Exception as e:
         logging.error(e)
         Spotify.auth(RETRY_TIME)
+        server_ids = get_server_ids()
