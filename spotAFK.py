@@ -99,7 +99,7 @@ def can_i_play(succes_checks    : int,
             if Spotify.client.current_user_playing_track()["is_playing"]:  
                     for device in Spotify.client.devices()["devices"]:
                         if device["is_active"]:
-                            if device["name"] in SERVER_NAME:
+                            if device["name"] in SERVER_NAMES:
                                 succes_checks += 1
                                 break
                             else:
