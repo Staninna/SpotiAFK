@@ -1,4 +1,4 @@
-# Imports
+# IMPORTS
 import os
 import time
 import random
@@ -8,7 +8,7 @@ import logging
 import datetime
 import requests
 
-# API Class
+# API CLASS
 class API(object):
     def __init__(self,
                  client_id      : str,
@@ -62,24 +62,22 @@ class API(object):
                 time.sleep(retry_time)
                 log(logging.INFO, "Retrying to get authenticated")
 
-# TODO IDK WHAT YET
+# API SETTINGS
+USERNAME = options.USERNAME
+CLIENT_ID = options.CLIENT_ID
+CLIENT_SECRET = options.CLIENT_SECRET
+REDIRECT_URI = "http://localhost:8888/callback/"
+TOKEN_PATH = f"{os.path.dirname(os.path.realpath(__file__))}/token-{USERNAME}.dat"
+SCOPE = "user-modify-playback-state playlist-read-private user-read-playback-state"
 
-client_id = options.CLIENT_ID
-client_secret = options.CLIENT_SECRET
-redirect_uri = "http://localhost:8888/callback/"
-username = "Staninna"
-scope = "user-modify-playback-state playlist-read-private user-read-playback-state"
-token_path = f"{os.path.dirname(os.path.realpath(__file__))}/token-{username}.dat"
-Spotify = API(client_id,
-              client_secret,
-              redirect_uri,
-              username,
-              scope,
-              token_path)
+Spotify = API(CLIENT_ID,
+              CLIENT_SECRET,
+              REDIRECT_URI,
+              USERNAME,
+              SCOPE,
+              TOKEN_PATH)
 
-
-# SETTINGS
-
+# APP SETTINGS
 SERVER_NAMES = options.SERVER_NAMES
 PLAYLIST_NAME = options.PLAYLIST_NAME
 TIME_BETWEEN_CHEAKS = options.TIME_BETWEEN_CHEAKS
@@ -89,9 +87,9 @@ SKIP_SONGS = options.SKIP_SONGS
 SKIP_DELAY = options.SKIP_DELAY
 RETRY_TIME = options.RETRY_TIME
 
-# Code
+# CODE
 
-# Functions
+# FUNCTIONS
 def can_i_play(succes_checks    : int,
                retry_time       : float,):
     while True:
@@ -172,7 +170,7 @@ def log(level,
     print(message)
     logging.log(level, message)
 
-# Making Log File
+# MAKING LOG FILE
 if not os.path.isdir("logs"):
     os.mkdir("logs")
 date = datetime.datetime.now()
@@ -183,25 +181,34 @@ logging.basicConfig(filename=f"logs/{date.day}-{date.month}-{date.year}_{date.ho
                     )
 log(logging.INFO, "Started the program")
 
-# Auth
+# AUTH
 Spotify.auth(RETRY_TIME)
 
+# SETTING SOME VARIABLES
 server_ids = get_server_ids()
-
-# Main loop
 succes_checks = 0
 played = False
+
+# MAIN LOOP
 while True:
     try:
+
+        # TESTING X TIMES BEFORE PLAYING SONGS
         time.sleep(TIME_BETWEEN_CHEAKS)
         succes_checks = can_i_play(succes_checks, RETRY_TIME)
         log(logging.INFO, f"Checked if i could play success rate is [{succes_checks}/{CHEAKS_BEFORE_PLAYING}]")
         if played:
             played = False
+        
+        # MAIN PLAY LOOP
         while succes_checks >= CHEAKS_BEFORE_PLAYING:
+            
+            # IF NOT LOGGED THAT PROGRAM IS PLAYING DO SO
             if not played:
                 log(logging.INFO, "Started playing tracks")
                 played = True
+            
+            # TRANSFERING PLAYBACK TO SERVER
             while True:
                 try:
                     Spotify.client.transfer_playback(server_ids[0], False)
@@ -210,11 +217,17 @@ while True:
                     log(logging.INFO, "No internet connection found while transfering playback to server")
                     time.sleep(RETRY_TIME)
                     log(logging.INFO, "Retrying transfering playback to server")
+            
+            # GETTING ALL SONGS FROM THE AFK PLAYLIST
             tracks = update_playlist(RETRY_TIME)
+            
+            # LOOPING OVER SONGS
             for track, duration, name in tracks:
                 if can_i_play(0, RETRY_TIME) == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
                     break
+                
+                # ADD SONG TO QUEUE
                 while True:
                     try:
                         Spotify.client.add_to_queue(track)
@@ -223,6 +236,8 @@ while True:
                         log(logging.INFO, "No internet connection found while adding track to queue")
                         time.sleep(RETRY_TIME)
                         log(logging.INFO, "Retrying adding track to queue")
+                
+                # PLAY THE SONG
                 while True:
                     try:
                         Spotify.client.next_track()
@@ -231,15 +246,23 @@ while True:
                         log(logging.INFO, "No internet connection found while skipping track")
                         time.sleep(RETRY_TIME)
                         log(logging.INFO, "Retrying skipping track")
+                
+                # WAIT TILL SONG IS DONE
                 if SKIP_SONGS:
                     time.sleep(SKIP_DELAY)
                 else:
                     time.sleep(duration)
                 log(logging.INFO, f"Played {name}")
+            
+            # IF LOOPED OVER ALL SONGS WAIT
             time.sleep(TIME_BETWEEN_CHEAKS)
             succes_checks = can_i_play(succes_checks, RETRY_TIME)
+    
+    
+    # RESET SOME THINGS ON A ERROR
     except Exception as e:
-        time.sleep(RETRY_TIME)
         log(logging.ERROR, e)
+        time.sleep(RETRY_TIME)
         Spotify.auth(RETRY_TIME)
         server_ids = get_server_ids()
+        tracks = update_playlist(RETRY_TIME)
