@@ -90,7 +90,7 @@ It uses the Spotify API to check if you are listening to music and if you don't 
 9.  Copy the client secret and paste it into `options.py` under `CLIENT_SECRET`
     ```py
     # ⚠️⚠️⚠️⚠️
-    # DON'T SHARE THIS WITH ANYONE IT GIVES YOU COMPLETE CONTROL OVER YOUR SPOTIFY ACCOUNT USING THE API
+    # DON'T SHARE THIS WITH ANYONE IT GIVES YOU COMPLETE CONTROL OVER YOUR SPOTIFY ACCOUNT
     # ⚠️⚠️⚠️⚠️
     ```
 
