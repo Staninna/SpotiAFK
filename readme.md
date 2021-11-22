@@ -100,7 +100,7 @@ It uses the Spotify API to check if you are listening to music and if you don't 
 
 1. Go to the folder where you extracted the programme
 
-2. Go to the Configure section on this page and configure `options.py` to your liking
+2. Go to the [Configure section](<(https://github.com/Staninna/SpotiAFK#configuring)>) on this page and configure `options.py` to your liking
 
 3. Run `pip install spotipy` in the command prompt (cmd.exe) otherwise the program will not work then run `spotiAFK.py` with Python
 
