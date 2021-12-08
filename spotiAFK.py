@@ -64,7 +64,7 @@ class API(object):
                 log(logging.INFO, "Retrying to get authenticated")
 
 # SEND MESSAGE THAT THE PROGRAM IS STARTING
-telegram_send.send(messages=["Starting the program..."])
+telegram_send.send(messages=["Starting the program..."], conf="lol.conf")
 
 # API SETTINGS
 USERNAME = options.USERNAME
@@ -265,7 +265,7 @@ while True:
     
     # RESET SOME THINGS ON A ERROR
     except Exception as e:
-        telegram_send.send(messages=[str(e)])
+        telegram_send.send(messages=[str(e)], conf="lol.conf")
         log(logging.ERROR, e)
         time.sleep(RETRY_TIME)
         Spotify.auth(RETRY_TIME)
