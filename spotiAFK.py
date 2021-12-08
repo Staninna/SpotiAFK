@@ -63,6 +63,9 @@ class API(object):
                 time.sleep(retry_time)
                 log(logging.INFO, "Retrying to get authenticated")
 
+# SEND MESSAGE THAT THE PROGRAM IS STARTING
+telegram_send.send(messages=["Starting the program..."])
+
 # API SETTINGS
 USERNAME = options.USERNAME
 CLIENT_ID = options.CLIENT_ID
@@ -182,7 +185,7 @@ logging.basicConfig(filename=f"logs/{date.day}-{date.month}-{date.year}_{date.ho
                     )
 log(logging.INFO, "Started the program")
 
-# AUTH
+# FIRST AUTH
 Spotify.auth(RETRY_TIME)
 
 # SETTING SOME VARIABLES
@@ -262,7 +265,7 @@ while True:
     
     # RESET SOME THINGS ON A ERROR
     except Exception as e:
-        telegram_send.send(messages=[e])
+        telegram_send.send(messages=[str(e)])
         log(logging.ERROR, e)
         time.sleep(RETRY_TIME)
         Spotify.auth(RETRY_TIME)
