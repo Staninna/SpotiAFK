@@ -23,6 +23,8 @@ It uses the Spotify API to check if you are listening to music and if you don't 
 
 ## Setting it up
 
+TODO telegram_send https://medium.com/@robertbracco1/how-to-write-a-telegram-bot-to-send-messages-with-python-bcdf45d0a580
+
 ### Step one: Downloading the program
 
 1. Download the latest version via [this link](https://github.com/Staninna/spotiAFK/releases/latest)

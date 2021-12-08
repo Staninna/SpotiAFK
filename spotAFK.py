@@ -7,6 +7,7 @@ import spotipy
 import logging
 import datetime
 import requests
+import telegram_send
 
 # API CLASS
 class API(object):
@@ -261,6 +262,7 @@ while True:
     
     # RESET SOME THINGS ON A ERROR
     except Exception as e:
+        telegram_send.send(messages=[e])
         log(logging.ERROR, e)
         time.sleep(RETRY_TIME)
         Spotify.auth(RETRY_TIME)
