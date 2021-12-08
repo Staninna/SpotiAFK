@@ -1,4 +1,4 @@
-# IMPORTS
+# Imports
 import os
 import time
 import random
@@ -9,7 +9,30 @@ import datetime
 import requests
 import telegram_send
 
-# API CLASS
+# Variables
+
+# API variables
+USERNAME = options.USERNAME
+CLIENT_ID = options.CLIENT_ID
+CLIENT_SECRET = options.CLIENT_SECRET
+REDIRECT_URI = options.REDIRECT_URI
+TOKEN_PATH = f"{os.path.dirname(os.path.realpath(__file__))}/token-{USERNAME}.dat"
+SCOPE = "user-modify-playback-state playlist-read-private user-read-playback-state"
+
+# App variables
+NOTIFICATION_FILENAME = options.NOTIFICATION_FILENAME
+SERVER_NAMES = options.SERVER_NAMES
+PLAYLIST_NAME = options.PLAYLIST_NAME
+TIME_BETWEEN_CHEAKS = options.TIME_BETWEEN_CHEAKS
+CHEAKS_BEFORE_PLAYING = options.CHEAKS_BEFORE_PLAYING
+RANDOM_ORDER_TRACKS = options.RANDOM_ORDER_TRACKS
+SKIP_SONGS = options.SKIP_SONGS
+SKIP_DELAY = options.SKIP_DELAY
+RETRY_TIME = options.RETRY_TIME
+
+# Classes
+
+# API class
 class API(object):
     def __init__(self,
                  client_id      : str,
@@ -63,37 +86,9 @@ class API(object):
                 time.sleep(retry_time)
                 log(logging.INFO, "Retrying to get authenticated")
 
-# SEND MESSAGE THAT THE PROGRAM IS STARTING
-telegram_send.send(messages=["Starting the program..."], conf="lol.conf")
+# Functions
 
-# API SETTINGS
-USERNAME = options.USERNAME
-CLIENT_ID = options.CLIENT_ID
-CLIENT_SECRET = options.CLIENT_SECRET
-REDIRECT_URI = options.REDIRECT_URI
-TOKEN_PATH = f"{os.path.dirname(os.path.realpath(__file__))}/token-{USERNAME}.dat"
-SCOPE = "user-modify-playback-state playlist-read-private user-read-playback-state"
-
-Spotify = API(CLIENT_ID,
-              CLIENT_SECRET,
-              REDIRECT_URI,
-              USERNAME,
-              SCOPE,
-              TOKEN_PATH)
-
-# APP SETTINGS
-SERVER_NAMES = options.SERVER_NAMES
-PLAYLIST_NAME = options.PLAYLIST_NAME
-TIME_BETWEEN_CHEAKS = options.TIME_BETWEEN_CHEAKS
-CHEAKS_BEFORE_PLAYING = options.CHEAKS_BEFORE_PLAYING
-RANDOM_ORDER_TRACKS = options.RANDOM_ORDER_TRACKS
-SKIP_SONGS = options.SKIP_SONGS
-SKIP_DELAY = options.SKIP_DELAY
-RETRY_TIME = options.RETRY_TIME
-
-# CODE
-
-# FUNCTIONS
+# Check if program can play
 def can_i_play(succes_checks    : int,
                retry_time       : float,):
     while True:
@@ -119,6 +114,7 @@ def can_i_play(succes_checks    : int,
             log(logging.INFO, "Retrying checking if server could play tracks")
     return succes_checks
 
+# Update the playlist
 def update_playlist(retry_time  : float):
     while True:
         try:
@@ -148,6 +144,7 @@ def update_playlist(retry_time  : float):
             log(logging.INFO, "Retrying checking if server could play tracks")
     return tracks_to_play
 
+# Get ids of play servers
 def get_server_ids():
     server_ids = list()
     while True:
@@ -169,12 +166,18 @@ def get_server_ids():
             log(logging.INFO, "Retrying updateing playlist")
     return server_ids
 
+# Loggin to a file
 def log(level, 
         message):
     print(message)
     logging.log(level, message)
 
-# MAKING LOG FILE
+# Code
+
+# Send notification that programm is starting
+telegram_send.send(messages=["Starting program..."], conf=NOTIFICATION_FILENAME)
+
+# Making log file
 if not os.path.isdir("logs"):
     os.mkdir("logs")
 date = datetime.datetime.now()
@@ -185,34 +188,43 @@ logging.basicConfig(filename=f"logs/{date.day}-{date.month}-{date.year}_{date.ho
                     )
 log(logging.INFO, "Started the program")
 
-# FIRST AUTH
+# Make spotify API object
+Spotify = API(CLIENT_ID,
+              CLIENT_SECRET,
+              REDIRECT_URI,
+              USERNAME,
+              SCOPE,
+              TOKEN_PATH)
+
+# First auth
 Spotify.auth(RETRY_TIME)
 
-# SETTING SOME VARIABLES
+# Some variables
 server_ids = get_server_ids()
 succes_checks = 0
 played = False
 
-# MAIN LOOP
+# Main loop
 while True:
     try:
 
-        # TESTING X TIMES BEFORE PLAYING SONGS
+        # Testing x times before playing songs
         time.sleep(TIME_BETWEEN_CHEAKS)
         succes_checks = can_i_play(succes_checks, RETRY_TIME)
         log(logging.INFO, f"Checked if i could play success rate is [{succes_checks}/{CHEAKS_BEFORE_PLAYING}]")
         if played:
             played = False
         
-        # MAIN PLAY LOOP
+        # Main play loop
         while succes_checks >= CHEAKS_BEFORE_PLAYING:
             
-            # IF NOT LOGGED THAT PROGRAM IS PLAYING DO SO
+            # If not logged that program is playing do so
             if not played:
                 log(logging.INFO, "Started playing tracks")
+                telegram_send.send(messages=["Started playing track"], conf=NOTIFICATION_FILENAME)
                 played = True
             
-            # TRANSFERING PLAYBACK TO SERVER
+            # Transfering playback to server
             while True:
                 try:
                     Spotify.client.transfer_playback(server_ids[0], False)
@@ -222,16 +234,17 @@ while True:
                     time.sleep(RETRY_TIME)
                     log(logging.INFO, "Retrying transfering playback to server")
             
-            # GETTING ALL SONGS FROM THE AFK PLAYLIST
+            # Getting all songs from the afk playlist
             tracks = update_playlist(RETRY_TIME)
             
-            # LOOPING OVER SONGS
+            # Looping over songs
             for track, duration, name in tracks:
                 if can_i_play(0, RETRY_TIME) == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
+                    telegram_send.send(messages=["Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
                     break
                 
-                # ADD SONG TO QUEUE
+                # Add song to queue
                 while True:
                     try:
                         Spotify.client.add_to_queue(track)
@@ -241,7 +254,7 @@ while True:
                         time.sleep(RETRY_TIME)
                         log(logging.INFO, "Retrying adding track to queue")
                 
-                # PLAY THE SONG
+                # Play the song
                 while True:
                     try:
                         Spotify.client.next_track()
@@ -251,21 +264,21 @@ while True:
                         time.sleep(RETRY_TIME)
                         log(logging.INFO, "Retrying skipping track")
                 
-                # WAIT TILL SONG IS DONE
+                # Wait till song is done
                 if SKIP_SONGS:
                     time.sleep(SKIP_DELAY)
                 else:
                     time.sleep(duration)
                 log(logging.INFO, f"Played {name}")
             
-            # IF LOOPED OVER ALL SONGS WAIT
+            # If looped over all songs wait
             time.sleep(TIME_BETWEEN_CHEAKS)
             succes_checks = can_i_play(succes_checks, RETRY_TIME)
     
     
-    # RESET SOME THINGS ON A ERROR
+    # Reset some things on a error
     except Exception as e:
-        telegram_send.send(messages=[str(e)], conf="lol.conf")
+        telegram_send.send(messages=[str(e)], conf=NOTIFICATION_FILENAME)
         log(logging.ERROR, e)
         time.sleep(RETRY_TIME)
         Spotify.auth(RETRY_TIME)
