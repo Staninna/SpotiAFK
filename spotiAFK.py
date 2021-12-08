@@ -175,7 +175,7 @@ def log(level,
 # Code
 
 # Send notification that program is starting
-telegram_send.send(messages=["Starting program..."], conf=NOTIFICATION_FILENAME)
+telegram_send.send(messages=[f"{datetime.timestamp(datetime.now())}: INFO: Starting program..."], conf=NOTIFICATION_FILENAME)
 
 # Making log file
 if not os.path.isdir("logs"):
@@ -223,7 +223,7 @@ while True:
             if not played:
                 log(logging.INFO, "Started playing tracks")
                 if lass_message_send != "Started playing track":
-                    telegram_send.send(messages=["Started playing track"], conf=NOTIFICATION_FILENAME)
+                    telegram_send.send(messages=[f"{datetime.timestamp(datetime.now())}: INFO: Started playing track"], conf=NOTIFICATION_FILENAME)
                     lass_message_send = "Started playing track"
                 played = True
             
@@ -245,7 +245,7 @@ while True:
                 if can_i_play(0, RETRY_TIME) == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
                     if lass_message_send != "Stopped playing tracks":
-                        telegram_send.send(messages=["Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
+                        telegram_send.send(messages=[f"{datetime.timestamp(datetime.now())}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
                         last_message_send = "Stopped playing tracks"
                     break
                 
@@ -284,7 +284,7 @@ while True:
     # Reset some things on a error
     except Exception as e:
         if not "The access token expired, reason: None" in str(e):
-            telegram_send.send(messages=[str(e)], conf=NOTIFICATION_FILENAME)
+            telegram_send.send(messages=[f"{datetime.timestamp(datetime.now())}: INFO: {str(e)}"], conf=NOTIFICATION_FILENAME)
         log(logging.ERROR, e)
         time.sleep(RETRY_TIME)
         Spotify.auth(RETRY_TIME)
