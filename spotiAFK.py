@@ -174,7 +174,7 @@ def log(level,
 
 # Code
 
-# Send notification that programm is starting
+# Send notification that program is starting
 telegram_send.send(messages=["Starting program..."], conf=NOTIFICATION_FILENAME)
 
 # Making log file
@@ -203,6 +203,7 @@ Spotify.auth(RETRY_TIME)
 server_ids = get_server_ids()
 succes_checks = 0
 played = False
+lass_message_send = None
 
 # Main loop
 while True:
@@ -221,7 +222,9 @@ while True:
             # If not logged that program is playing do so
             if not played:
                 log(logging.INFO, "Started playing tracks")
-                telegram_send.send(messages=["Started playing track"], conf=NOTIFICATION_FILENAME)
+                if lass_message_send != "Started playing track":
+                    telegram_send.send(messages=["Started playing track"], conf=NOTIFICATION_FILENAME)
+                    lass_message_send = "Started playing track"
                 played = True
             
             # Transfering playback to server
@@ -241,7 +244,9 @@ while True:
             for track, duration, name in tracks:
                 if can_i_play(0, RETRY_TIME) == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
-                    telegram_send.send(messages=["Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
+                    if lass_message_send != "Stopped playing tracks":
+                        telegram_send.send(messages=["Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
+                        last_message_send = "Stopped playing tracks"
                     break
                 
                 # Add song to queue
@@ -278,7 +283,8 @@ while True:
     
     # Reset some things on a error
     except Exception as e:
-        telegram_send.send(messages=[str(e)], conf=NOTIFICATION_FILENAME)
+        if not "The access token expired, reason: None" in str(e):
+            telegram_send.send(messages=[str(e)], conf=NOTIFICATION_FILENAME)
         log(logging.ERROR, e)
         time.sleep(RETRY_TIME)
         Spotify.auth(RETRY_TIME)
