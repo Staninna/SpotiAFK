@@ -175,7 +175,7 @@ def log(level,
 # Code
 
 # Send notification that program is starting
-telegram_send.send(messages=[f"{datetime.timestamp(datetime.now())}: INFO: Starting program..."], conf=NOTIFICATION_FILENAME)
+telegram_send.send(messages=[f"{datetime.datetime.now()}: INFO: Starting program..."], conf=NOTIFICATION_FILENAME)
 
 # Making log file
 if not os.path.isdir("logs"):
