@@ -1,5 +1,3 @@
-# TODO timelogger
-
 # Imports
 import os
 import time
@@ -215,10 +213,10 @@ Spotify = API(CLIENT_ID,
               TOKEN_PATH)
 
 # First auth
-lost_tome = Spotify.auth(RETRY_TIME, 0)
+lost_time = Spotify.auth(RETRY_TIME, 0)
 
 # Some variables
-server_ids, lost_time = get_server_ids()
+server_ids, lost_time = get_server_ids(lost_time)
 succes_checks = 0
 retries = 0
 played = False
@@ -318,7 +316,7 @@ while True:
                 log(logging.ERROR, e)
                 time.sleep(RETRY_TIME * (retries + 1))
                 lost_time = Spotify.auth(RETRY_TIME)
-                server_ids, lost_time = get_server_ids()
+                server_ids, lost_time = get_server_ids(lost_time)
                 tracks, lost_time = update_playlist(RETRY_TIME)
                 retries = 0
                 break
