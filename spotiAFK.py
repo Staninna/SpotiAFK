@@ -224,6 +224,7 @@ while True:
             # If not logged that program is playing do so
             if not played:
                 log(logging.INFO, "Started playing tracks")
+                print(f"{random.random()}:{lass_message_send}")
                 if lass_message_send != "Started playing track":
                     telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Started playing track"], conf=NOTIFICATION_FILENAME)
                     lass_message_send = "Started playing track"
