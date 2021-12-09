@@ -267,7 +267,7 @@ while True:
                     with open(TIMELOG_FILENAME, "r") as f:
                         total_time = float(f.readline()) + (start_playing_time - lost_time - time.time())
                     with open(TIMELOG_FILENAME, "w") as f:
-                        f.write(total_time)
+                        f.write(str(total_time))
                     if last_message_send != "Stopped playing tracks":
                         telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME, silent=True)
                         last_message_send = "Stopped playing tracks"
