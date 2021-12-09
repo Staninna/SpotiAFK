@@ -159,7 +159,7 @@ def get_server_ids():
                     log(logging.INFO, f"Server named {server_id} found")
             if "server_id" not in locals():
                 log(logging.INFO, f"The servers {SERVER_NAMES} were not found")
-                # time.sleep(RETRY_TIME)
+                time.sleep(RETRY_TIME)
                 log(logging.INFO, "Retrying getting server ids")
             else:
                 break
