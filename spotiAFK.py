@@ -281,7 +281,7 @@ while True:
             succes_checks = can_i_play(succes_checks, RETRY_TIME)
     
     
-    # Reset some things on a error
+    # Reset and log some things on a error
     except Exception as e:
         if not "The access token expired, reason: None" in str(e):
             telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
