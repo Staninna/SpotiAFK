@@ -301,6 +301,4 @@ while True:
                 if not "The access token expired, reason: None" in str(e):
                     telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
                 log(logging.ERROR, e)
-                time.sleep(RETRY_TIME * (retries + 1))
-        telegram_send.s
-                
+                time.sleep(RETRY_TIME * (retries + 1))      
