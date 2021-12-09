@@ -225,7 +225,7 @@ while True:
             if not played:
                 log(logging.INFO, "Started playing tracks")
                 if last_message_send != "Started playing track":
-                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Started playing track"], conf=NOTIFICATION_FILENAME)
+                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Started playing track"], conf=NOTIFICATION_FILENAME, silent=True)
                     last_message_send = "Started playing track"
                 played = True
             
@@ -247,7 +247,7 @@ while True:
                 if can_i_play(0, RETRY_TIME) == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
                     if last_message_send != "Stopped playing tracks":
-                        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
+                        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME, silent=True)
                         last_message_send = "Stopped playing tracks"
                     break
                 
@@ -302,4 +302,5 @@ while True:
                     telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
                 log(logging.ERROR, e)
                 time.sleep(RETRY_TIME * (retries + 1))
+        telegram_send.s
                 
