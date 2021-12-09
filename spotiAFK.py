@@ -262,7 +262,7 @@ while True:
             
             # Looping over songs
             for track, duration, name in tracks:
-                if can_i_play(0, RETRY_TIME, lost_time)[0] == 0:                    
+                if can_i_play(0, RETRY_TIME, lost_time)[0] == 0:
                     log(logging.INFO, "Stopped playing tracks")
                     with open(TIMELOG_FILENAME, "r") as f:
                         total_time = float(f.readline()) + (start_playing_time - lost_time - time.time())
