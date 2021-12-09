@@ -215,7 +215,7 @@ while True:
 
         # Testing x times before playing songs
         time.sleep(TIME_BETWEEN_CHEAKS)
-        succes_checks, retries = can_i_play(succes_checks, RETRY_TIME)
+        succes_checks, retries = can_i_play(succes_checks, RETRY_TIME, retries)
         log(logging.INFO, f"Checked if i could play success rate is [{succes_checks}/{CHEAKS_BEFORE_PLAYING}]")
         if played:
             played = False
@@ -246,7 +246,7 @@ while True:
             
             # Looping over songs
             for track, duration, name in tracks:
-                if can_i_play(0, RETRY_TIME)[0] == 0:                    
+                if can_i_play(0, RETRY_TIME, retries)[0] == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
                     if lass_message_send != "Stopped playing tracks":
                         telegram_send.send(messages=[f"{datetime.datetime.now()}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
@@ -282,7 +282,7 @@ while True:
             
             # If looped over all songs wait
             time.sleep(TIME_BETWEEN_CHEAKS)
-            succes_checks, retries = can_i_play(succes_checks, RETRY_TIME)
+            succes_checks, retries = can_i_play(succes_checks, RETRY_TIME, retries)
     
     
     # Reset and log some things on a error
