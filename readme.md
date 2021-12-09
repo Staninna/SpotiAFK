@@ -35,7 +35,10 @@ It uses the Spotify API to check if you are listening to music and if you don't 
 
         - Note that if you want to customize your bot, you can do that also here with `Edit Bot`
 
-    4. Select `API Token` and copy the token and⚠️DON'T SHARE IT WITH ANYONE⚠️
+    4. Select `API Token` and copy the token and<br>
+       ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️<br>
+       DON'T SHARE THOSE STRINGS WITH ANYONE<br>
+       ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
 
 2.  Make `telegram.conf`
 
@@ -100,9 +103,9 @@ NOTIFICATION_FILENAME = "telegram.conf"
 
         4. Pick an `app name` and `app description` of your choice and mark the checkboxes
 
-        5. After creation, you see your `client Id` and you can click on `show client secret` to show your `client secret` and copy them
-           ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
-           DON'T SHARE THOSE STRINGS WITH ANYONE
+        5. After creation, you see your `client Id` and you can click on `show client secret` to show your `client secret` and copy them<br>
+           ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️<br>
+           DON'T SHARE THOSE STRINGS WITH ANYONE<br>
            ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
 
         6. Click on `edit settings` and add your redirection URL by `redirect uris` than click `save`
