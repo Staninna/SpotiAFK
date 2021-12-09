@@ -315,7 +315,7 @@ while True:
                     telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
                 log(logging.ERROR, e)
                 time.sleep(RETRY_TIME * (retries + 1))
-                lost_time = Spotify.auth(RETRY_TIME)
+                lost_time = Spotify.auth(RETRY_TIME, lost_time)
                 server_ids, lost_time = get_server_ids(lost_time)
                 tracks, lost_time = update_playlist(RETRY_TIME)
                 retries = 0
