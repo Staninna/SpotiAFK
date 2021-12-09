@@ -202,10 +202,10 @@ Spotify.auth(RETRY_TIME)
 
 # Some variables
 server_ids = get_server_ids()
-succes_checks = 0
+succes_checks = 6 # TODO DEBUG
 retries = 0
 played = False
-lass_message_send = None
+last_message_send = None
 
 # Main loop
 while True:
@@ -224,10 +224,10 @@ while True:
             # If not logged that program is playing do so
             if not played:
                 log(logging.INFO, "Started playing tracks")
-                print(f"{random.random()}:{lass_message_send}")
-                if lass_message_send != "Started playing track":
+                print(f"{random.random()}:{last_message_send}")
+                if last_message_send != "Started playing track":
                     telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Started playing track"], conf=NOTIFICATION_FILENAME)
-                    lass_message_send = "Started playing track"
+                    last_message_send = "Started playing track"
                 played = True
             
             # Transfering playback to server
@@ -247,7 +247,7 @@ while True:
             for track, duration, name in tracks:
                 if can_i_play(0, RETRY_TIME) == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
-                    if lass_message_send != "Stopped playing tracks":
+                    if last_message_send != "Stopped playing tracks":
                         telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
                         last_message_send = "Stopped playing tracks"
                     break
