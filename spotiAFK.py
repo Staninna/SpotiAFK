@@ -296,6 +296,7 @@ while True:
                 Spotify.auth(RETRY_TIME)
                 server_ids = get_server_ids()
                 tracks = update_playlist(RETRY_TIME)
+                break
             except Exception as e:
                 retries += 1
                 if not "The access token expired, reason: None" in str(e):
