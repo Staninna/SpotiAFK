@@ -205,7 +205,7 @@ Spotify.auth(RETRY_TIME)
 # Some variables
 server_ids = get_server_ids()
 succes_checks = 0
-retires = 0
+retries = 0
 played = False
 lass_message_send = None
 
@@ -302,3 +302,4 @@ while True:
                     telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
                 log(logging.ERROR, e)
                 time.sleep(RETRY_TIME * (retries + 1))
+                
