@@ -247,7 +247,7 @@ while True:
                 if can_i_play(0, RETRY_TIME) == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
                     if lass_message_send != "Stopped playing tracks":
-                        telegram_send.send(messages=[f"{datetime.datetime.now().split('.')[0]}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
+                        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
                         last_message_send = "Stopped playing tracks"
                     break
                 
