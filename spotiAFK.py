@@ -258,7 +258,7 @@ while True:
                     log(logging.INFO, "Retrying transfering playback to server")
             
             # Getting all songs from the afk playlist
-            tracks, lost_time = update_playlist(RETRY_TIME)
+            tracks, lost_time = update_playlist(RETRY_TIME, lost_time)
             
             # Looping over songs
             for track, duration, name in tracks:
@@ -317,7 +317,7 @@ while True:
                 time.sleep(RETRY_TIME * (retries + 1))
                 lost_time = Spotify.auth(RETRY_TIME, lost_time)
                 server_ids, lost_time = get_server_ids(lost_time)
-                tracks, lost_time = update_playlist(RETRY_TIME)
+                tracks, lost_time = update_playlist(RETRY_TIME, lost_time)
                 retries = 0
                 break
             except Exception as e:
