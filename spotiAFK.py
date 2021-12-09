@@ -284,7 +284,7 @@ while True:
     # Reset some things on a error
     except Exception as e:
         if not "The access token expired, reason: None" in str(e):
-            telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: {str(e)}"], conf=NOTIFICATION_FILENAME)
+            telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
         log(logging.ERROR, e)
         time.sleep(RETRY_TIME)
         Spotify.auth(RETRY_TIME)
