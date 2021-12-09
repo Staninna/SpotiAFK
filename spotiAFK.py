@@ -18,7 +18,7 @@ USERNAME = options.USERNAME
 CLIENT_ID = options.CLIENT_ID
 CLIENT_SECRET = options.CLIENT_SECRET
 REDIRECT_URI = options.REDIRECT_URI
-TOKEN_PATH = f"{os.path.dirname(os.path.realpath(__file__))}/token-{USERNAME}.dat"
+TOKEN_PATH = f"{os.path.dirname(os.path.realpath(__file__))}/token-{USERNAME}.dat" 
 SCOPE = "user-modify-playback-state playlist-read-private user-read-playback-state"
 
 # App variables
