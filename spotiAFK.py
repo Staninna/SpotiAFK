@@ -1,3 +1,5 @@
+# TODO timelogger
+
 # Imports
 import os
 import time
@@ -29,6 +31,7 @@ RANDOM_ORDER_TRACKS = options.RANDOM_ORDER_TRACKS
 SKIP_SONGS = options.SKIP_SONGS
 SKIP_DELAY = options.SKIP_DELAY
 RETRY_TIME = options.RETRY_TIME
+TIMELOG_FILENAME = options.TIMELOG_FILENAME
 
 # Classes
 
@@ -61,7 +64,8 @@ class API(object):
         self.tokens_path = tokens_path
     
     def auth(self,
-             retry_time : float) -> None:
+             retry_time : float,
+             lost_time  : float) -> None:
         while True:
             try:
                 if hasattr(self, 'token'):
@@ -83,14 +87,17 @@ class API(object):
                 break
             except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
                 log(logging.INFO, "No internet connection found while trying to get authenticated")
+                lost_time += RETRY_TIME
                 time.sleep(retry_time)
                 log(logging.INFO, "Retrying to get authenticated")
+        return lost_time
 
 # Functions
 
 # Check if program can play
 def can_i_play(succes_checks    : int,
-               retry_time       : float):
+               retry_time       : float,
+               lost_time        : float):  
     while True:
         try:
             if Spotify.client.current_user_playing_track()["is_playing"]:  
@@ -110,12 +117,14 @@ def can_i_play(succes_checks    : int,
             break
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
             log(logging.INFO, "No internet connection found while checking if server could play tracks")
+            lost_time += RETRY_TIME
             time.sleep(retry_time)
             log(logging.INFO, "Retrying checking if server could play tracks")
-    return succes_checks
+    return succes_checks, lost_time
 
 # Update the playlist
-def update_playlist(retry_time  : float):
+def update_playlist(retry_time  : float,
+                    lost_time   : float):
     while True:
         try:
             playlists = Spotify.client.current_user_playlists()
@@ -140,12 +149,13 @@ def update_playlist(retry_time  : float):
             break
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
             log(logging.INFO, "No internet connection found while checking if server could play tracks")
+            lost_time += RETRY_TIME
             time.sleep(retry_time)
             log(logging.INFO, "Retrying checking if server could play tracks")
-    return tracks_to_play
+    return tracks_to_play, lost_time
 
 # Get ids of play servers
-def get_server_ids():
+def get_server_ids(lost_time):
     server_ids = list()
     while True:
         try:
@@ -157,15 +167,17 @@ def get_server_ids():
                     log(logging.INFO, f"Server named {server_id} found")
             if "server_id" not in locals():
                 log(logging.INFO, f"The servers {SERVER_NAMES} were not found")
+                lost_time += RETRY_TIME
                 time.sleep(RETRY_TIME)
                 log(logging.INFO, "Retrying getting server ids")
             else:
                 break
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
             log(logging.INFO, "No internet connection found updating playlist")
+            lost_time += RETRY_TIME
             time.sleep(RETRY_TIME)
             log(logging.INFO, "Retrying updateing playlist")
-    return server_ids
+    return server_ids, lost_time
 
 # Loggin to a file
 def log(level, 
@@ -189,6 +201,11 @@ logging.basicConfig(filename=f"logs/{date.day}-{date.month}-{date.year}_{date.ho
                     )
 log(logging.INFO, "Started the program")
 
+# Making time log file
+if not os.path.isfile(TIMELOG_FILENAME):
+    with open(TIMELOG_FILENAME,"w") as f:
+        f.write("0")
+
 # Make spotify API object
 Spotify = API(CLIENT_ID,
               CLIENT_SECRET,
@@ -198,10 +215,10 @@ Spotify = API(CLIENT_ID,
               TOKEN_PATH)
 
 # First auth
-Spotify.auth(RETRY_TIME)
+lost_tome = Spotify.auth(RETRY_TIME, 0)
 
 # Some variables
-server_ids = get_server_ids()
+server_ids, lost_time = get_server_ids()
 succes_checks = 0
 retries = 0
 played = False
@@ -213,7 +230,7 @@ while True:
 
         # Testing x times before playing songs
         time.sleep(TIME_BETWEEN_CHEAKS)
-        succes_checks = can_i_play(succes_checks, RETRY_TIME)
+        succes_checks, lost_time = can_i_play(succes_checks, RETRY_TIME, lost_time)
         log(logging.INFO, f"Checked if i could play success rate is [{succes_checks}/{CHEAKS_BEFORE_PLAYING}]")
         if played:
             played = False
@@ -224,6 +241,8 @@ while True:
             # If not logged that program is playing do so
             if not played:
                 log(logging.INFO, "Started playing tracks")
+                start_playing_time = time.time()
+                lost_time = 0
                 if last_message_send != "Started playing track":
                     telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Started playing track"], conf=NOTIFICATION_FILENAME, silent=True)
                     last_message_send = "Started playing track"
@@ -236,16 +255,21 @@ while True:
                     break
                 except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
                     log(logging.INFO, "No internet connection found while transfering playback to server")
+                    lost_time += RETRY_TIME
                     time.sleep(RETRY_TIME)
                     log(logging.INFO, "Retrying transfering playback to server")
             
             # Getting all songs from the afk playlist
-            tracks = update_playlist(RETRY_TIME)
+            tracks, lost_time = update_playlist(RETRY_TIME)
             
             # Looping over songs
             for track, duration, name in tracks:
-                if can_i_play(0, RETRY_TIME) == 0:                    
+                if can_i_play(0, RETRY_TIME, lost_time)[0] == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
+                    with open(TIMELOG_FILENAME, "r") as f:
+                        total_time = float(f.readline()) + (start_playing_time - lost_time - time.time())
+                    with open(TIMELOG_FILENAME, "w") as f:
+                        f.write(total_time)
                     if last_message_send != "Stopped playing tracks":
                         telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME, silent=True)
                         last_message_send = "Stopped playing tracks"
@@ -258,6 +282,7 @@ while True:
                         break
                     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
                         log(logging.INFO, "No internet connection found while adding track to queue")
+                        lost_time += RETRY_TIME
                         time.sleep(RETRY_TIME)
                         log(logging.INFO, "Retrying adding track to queue")
                 
@@ -268,6 +293,7 @@ while True:
                         break
                     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
                         log(logging.INFO, "No internet connection found while skipping track")
+                        lost_time += RETRY_TIME
                         time.sleep(RETRY_TIME)
                         log(logging.INFO, "Retrying skipping track")
                 
@@ -280,7 +306,7 @@ while True:
             
             # If looped over all songs wait
             time.sleep(TIME_BETWEEN_CHEAKS)
-            succes_checks = can_i_play(succes_checks, RETRY_TIME)
+            succes_checks, lost_time = can_i_play(succes_checks, RETRY_TIME, lost_time)
     
     
     # Reset and log some things on a error
@@ -291,9 +317,9 @@ while True:
                     telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
                 log(logging.ERROR, e)
                 time.sleep(RETRY_TIME * (retries + 1))
-                Spotify.auth(RETRY_TIME)
-                server_ids = get_server_ids()
-                tracks = update_playlist(RETRY_TIME)
+                lost_time = Spotify.auth(RETRY_TIME)
+                server_ids, lost_time = get_server_ids()
+                tracks, lost_time = update_playlist(RETRY_TIME)
                 retries = 0
                 break
             except Exception as e:

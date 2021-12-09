@@ -22,3 +22,6 @@ RETRY_TIME = 10
 
 # Notifications
 NOTIFICATION_FILENAME = "telegram.conf"
+
+# Timelogging
+TIMELOG_FILENAME = "time.txt"
