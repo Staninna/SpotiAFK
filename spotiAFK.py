@@ -90,8 +90,7 @@ class API(object):
 
 # Check if program can play
 def can_i_play(succes_checks    : int,
-               retry_time       : float,
-               retries          : int):
+               retry_time       : float):
     while True:
         try:
             if Spotify.client.current_user_playing_track()["is_playing"]:  
@@ -105,7 +104,6 @@ def can_i_play(succes_checks    : int,
                                 break
             else:
                 succes_checks += 1
-            retries = 0
             break
         except TypeError:
             succes_checks += 1
@@ -114,7 +112,7 @@ def can_i_play(succes_checks    : int,
             log(logging.INFO, "No internet connection found while checking if server could play tracks")
             time.sleep(retry_time)
             log(logging.INFO, "Retrying checking if server could play tracks")
-    return succes_checks, retries
+    return succes_checks
 
 # Update the playlist
 def update_playlist(retry_time  : float):
@@ -215,7 +213,7 @@ while True:
 
         # Testing x times before playing songs
         time.sleep(TIME_BETWEEN_CHEAKS)
-        succes_checks, retries = can_i_play(succes_checks, RETRY_TIME, retries)
+        succes_checks = can_i_play(succes_checks, RETRY_TIME)
         log(logging.INFO, f"Checked if i could play success rate is [{succes_checks}/{CHEAKS_BEFORE_PLAYING}]")
         if played:
             played = False
@@ -246,7 +244,7 @@ while True:
             
             # Looping over songs
             for track, duration, name in tracks:
-                if can_i_play(0, RETRY_TIME, retries)[0] == 0:                    
+                if can_i_play(0, RETRY_TIME) == 0:                    
                     log(logging.INFO, "Stopped playing tracks")
                     if lass_message_send != "Stopped playing tracks":
                         telegram_send.send(messages=[f"{datetime.datetime.now().split('.')[0]}: INFO: Stopped playing tracks"], conf=NOTIFICATION_FILENAME)
@@ -282,7 +280,7 @@ while True:
             
             # If looped over all songs wait
             time.sleep(TIME_BETWEEN_CHEAKS)
-            succes_checks, retries = can_i_play(succes_checks, RETRY_TIME, retries)
+            succes_checks = can_i_play(succes_checks, RETRY_TIME)
     
     
     # Reset and log some things on a error
@@ -296,6 +294,7 @@ while True:
                 Spotify.auth(RETRY_TIME)
                 server_ids = get_server_ids()
                 tracks = update_playlist(RETRY_TIME)
+                retries = 0
                 break
             except Exception as e:
                 retries += 1
