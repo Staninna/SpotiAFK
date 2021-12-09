@@ -1,5 +1,6 @@
 # Imports
 import os
+import sys
 import time
 import random
 import options
@@ -309,6 +310,12 @@ while True:
     
     # Reset and log some things on a error
     except Exception as e:
+        # DEBUG
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        log(logging.ERROR, f"{e}:::{exc_type}:::{fname}:::{exc_tb.tb_lineno}")
+        telegram_send.send(messages=[f"{e}:::{exc_type}:::{fname}:::{exc_tb.tb_lineno}"], conf=NOTIFICATION_FILENAME)
+        # DEBUG
         while True:
             try:
                 if not "The access token expired, reason: None" in str(e):
@@ -321,6 +328,12 @@ while True:
                 retries = 0
                 break
             except Exception as e:
+                # DEBUG
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                log(logging.ERROR, f"{e}:::{exc_type}:::{fname}:::{exc_tb.tb_lineno}")
+                telegram_send.send(messages=[f"{e}:::{exc_type}:::{fname}:::{exc_tb.tb_lineno}"], conf=NOTIFICATION_FILENAME)
+                # DEBUG
                 retries += 1
                 if not "The access token expired, reason: None" in str(e):
                     telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
