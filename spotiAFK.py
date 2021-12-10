@@ -187,7 +187,7 @@ def log(level,
 # Code
 
 # Send notification that program is starting
-telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Starting program..."],
+telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Starting program... 🏁"],
                    conf=NOTIFICATION_FILENAME,
                    silent=True)
 
@@ -245,7 +245,7 @@ while True:
                 start_playing_time = time.time()
                 lost_time = 0
                 if last_message_send != "Started playing track":
-                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Started playing track"],
+                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Started playing track 🟩"],
                                        conf=NOTIFICATION_FILENAME,
                                        silent=True)
                     last_message_send = "Started playing track"
@@ -274,7 +274,7 @@ while True:
                     with open(TIMELOG_FILENAME, "w") as f:
                         f.write(total_time)
                     if last_message_send != "Stopped playing tracks":
-                        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Stopped playing tracks"],
+                        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Stopped playing tracks 🟥"],
                                            conf=NOTIFICATION_FILENAME, 
                                            silent=True)
                         last_message_send = "Stopped playing tracks"
@@ -319,7 +319,7 @@ while True:
         while True:
             try:
                 if not "The access token expired, reason: None" in str(error):
-                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error)}"],
+                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error)} ⚠️⚠️⚠️"],
                                        conf=NOTIFICATION_FILENAME,
                                        silent=True)
                 log(logging.ERROR, error)
@@ -332,7 +332,7 @@ while True:
             except Exception as error2:
                 retries += 1
                 if not "The access token expired, reason: None" in str(error2):
-                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error2)}"],
+                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error2)} ⚠️⚠️⚠️"],
                                        conf=NOTIFICATION_FILENAME,
                                        silent=True)
                 log(logging.ERROR, error2)
