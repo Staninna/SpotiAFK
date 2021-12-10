@@ -141,7 +141,7 @@ NOTIFICATION_FILENAME = "telegram.conf"
 
     |                       | Function                                 | Default       | Format                                |
     | --------------------- | ---------------------------------------- | ------------- | ------------------------------------- |
-    | NOTIFICATION_FILENAME | The name of the notification config file | telegram.conf | all files with a extension of `.conf` |
+    | NOTIFICATION_FILENAME | The name of the notification config file | telegram.conf | any string preferred with a extension |
 
 7.  Timelogging
 
