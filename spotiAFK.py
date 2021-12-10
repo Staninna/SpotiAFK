@@ -309,33 +309,21 @@ while True:
     
     
     # Reset and log some things on a error
-    except Exception as e:
-        # DEBUG
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        log(logging.ERROR, f"{e}:::{exc_type}:::{fname}:::{exc_tb.tb_lineno}")
-        telegram_send.send(messages=[f"{e}:::{exc_type}:::{fname}:::{exc_tb.tb_lineno}"], conf=NOTIFICATION_FILENAME)
-        # DEBUG
+    except Exception as error:
         while True:
             try:
-                if not "The access token expired, reason: None" in str(e):
-                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
-                log(logging.ERROR, e)
+                if not "The access token expired, reason: None" in str(error):
+                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error)}"], conf=NOTIFICATION_FILENAME)
+                log(logging.ERROR, error)
                 time.sleep(RETRY_TIME * (retries + 1))
                 lost_time = Spotify.auth(RETRY_TIME, lost_time)
                 server_ids, lost_time = get_server_ids(lost_time)
                 tracks, lost_time = update_playlist(RETRY_TIME, lost_time)
                 retries = 0
                 break
-            except Exception as e:
-                # DEBUG
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                log(logging.ERROR, f"{e}:::{exc_type}:::{fname}:::{exc_tb.tb_lineno}")
-                telegram_send.send(messages=[f"{e}:::{exc_type}:::{fname}:::{exc_tb.tb_lineno}"], conf=NOTIFICATION_FILENAME)
-                # DEBUG
+            except Exception as error2:
                 retries += 1
-                if not "The access token expired, reason: None" in str(e):
-                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(e)}"], conf=NOTIFICATION_FILENAME)
-                log(logging.ERROR, e)
+                if not "The access token expired, reason: None" in str(error2):
+                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error2)}"], conf=NOTIFICATION_FILENAME)
+                log(logging.ERROR, error2)
                 time.sleep(RETRY_TIME * (retries + 1))      
