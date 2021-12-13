@@ -80,7 +80,15 @@ TIME_BETWEEN_CHEAKS = 30
 RETRY_TIME = 10
 
 # Notifications
+NOTIFICATION_ENABLED = True
 NOTIFICATION_FILENAME = "telegram.conf"
+START_PROGRAM_NOTIFICATION = "Starting program 🏁"
+START_PLAYING_NOTIFICATION = "Started playing 🟩"
+STOP_PLAYING_NOTIFICATION = "Stopped playing 🟥"
+SEND_NOTIFICATION_ON_ERROR = True
+
+# Timelogging
+TIMELOG_FILENAME = "time.txt"
 ```
 
 1.  Playing
@@ -114,7 +122,7 @@ NOTIFICATION_FILENAME = "telegram.conf"
     | ------------- | --------------------------------- | ------------------------------- | ------------------------------------------------ |
     | CLIENT_ID     | Spotify application client id     | XXXXX                           | Your client id                                   |
     | CLIENT_SECRET | Spotify application client secret | XXXXX                           | Your client secret                               |
-    | REDIRECT_URI  | Your redirect uri                 | http://localhost:8888/callback/ | your redirect URI you added into the spotify API |
+    | REDIRECT_URI  | Your redirect uri                 | http://localhost:8888/callback/ | Your redirect URI you added into the spotify API |
 
 3.  Account
 
@@ -135,16 +143,20 @@ NOTIFICATION_FILENAME = "telegram.conf"
 
     |            | Function                                                 | Default | Format              |
     | ---------- | -------------------------------------------------------- | ------- | ------------------- |
-    | RETRY_TIME | Amount of time in seconds before retrying after an error | 10      | all numbers above 0 |
+    | RETRY_TIME | Amount of time in seconds before retrying after an error | 10      | All numbers above 0 |
 
 6.  Notifications
 
-    |                       | Function                                 | Default       | Format                                |
-    | --------------------- | ---------------------------------------- | ------------- | ------------------------------------- |
-    | NOTIFICATION_FILENAME | The name of the notification config file | telegram.conf | any string preferred with a extension |
+    |                            | Function                                                         | Default             | Format                                |
+    | -------------------------- | ---------------------------------------------------------------- | ------------------- | ------------------------------------- |
+    | NOTIFICATION_FILENAME      | The name of the notification config file                         | telegram.conf       | Any string preferred with a extension |
+    | START_PROGRAM_NOTIFICATION | Text of notification when program starts                         | Starting program 🏁 | Any string                            |
+    | START_PLAYING_NOTIFICATION | Text of notification when the music starts playing on the server | Started playing 🟩  | Any string                            |
+    | NOTIFICATION_FILENAME      | Text of notification when the music stops playing on the server  | Stopped playing 🟥  | Any string                            |
+    | SEND_NOTIFICATION_ON_ERROR | If you want an error notification                                | True                | True/False                            |
 
 7.  Timelogging
 
     |                  | Function                     | Default  | Format                                |
     | ---------------- | ---------------------------- | -------- | ------------------------------------- |
-    | TIMELOG_FILENAME | The name of the timelog file | time.txt | any string preferred with a extension |
+    | TIMELOG_FILENAME | The name of the timelog file | time.txt | Any string preferred with a extension |
