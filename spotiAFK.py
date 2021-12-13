@@ -31,6 +31,11 @@ SKIP_SONGS = options.SKIP_SONGS
 SKIP_DELAY = options.SKIP_DELAY
 RETRY_TIME = options.RETRY_TIME
 TIMELOG_FILENAME = options.TIMELOG_FILENAME
+NOTIFICATION_ENABLED = options.NOTIFICATION_ENABLED
+START_PROGRAM_NOTIFICATION = options.START_PROGRAM_NOTIFICATION
+START_PLAYING_NOTIFICATION = options.START_PLAYING_NOTIFICATION
+STOP_PLAYING_NOTIFICATION = options.STOP_PLAYING_NOTIFICATION
+SEND_NOTIFICATION_ON_ERROR = options.SEND_NOTIFICATION_ON_ERROR
 
 # Classes
 
@@ -187,9 +192,10 @@ def log(level,
 # Code
 
 # Send notification that program is starting
-telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Starting program... 🏁"],
-                   conf=NOTIFICATION_FILENAME,
-                   silent=True)
+if NOTIFICATION_ENABLED:
+    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: {START_PROGRAM_NOTIFICATION}"],
+                       conf=NOTIFICATION_FILENAME,
+                       silent=True)
 
 # Making log file
 if not os.path.isdir("logs"):
@@ -245,10 +251,11 @@ while True:
                 start_playing_time = time.time()
                 lost_time = 0
                 if last_message_send != "Started playing track":
-                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Started playing track 🟩"],
-                                       conf=NOTIFICATION_FILENAME,
-                                       silent=True)
-                    last_message_send = "Started playing track"
+                    if NOTIFICATION_ENABLED:
+                        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: {START_PLAYING_NOTIFICATION}"],
+                                           conf=NOTIFICATION_FILENAME,
+                                           silent=True)
+                        last_message_send = "Started playing track"
                 played = True
             
             # Transfering playback to server
@@ -274,10 +281,11 @@ while True:
                     with open(TIMELOG_FILENAME, "w") as f:
                         f.write(total_time)
                     if last_message_send != "Stopped playing tracks":
-                        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: Stopped playing tracks 🟥"],
-                                           conf=NOTIFICATION_FILENAME, 
-                                           silent=True)
-                        last_message_send = "Stopped playing tracks"
+                        if NOTIFICATION_ENABLED:
+                            telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: {STOP_PLAYING_NOTIFICATION}"],
+                                               conf=NOTIFICATION_FILENAME, 
+                                               silent=True)
+                            last_message_send = "Stopped playing tracks"
                     break
                 
                 # Add song to queue
@@ -318,10 +326,11 @@ while True:
     except Exception as error:
         while True:
             try:
-                if not "The access token expired, reason: None" in str(error):
-                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error)} ⚠️⚠️⚠️"],
-                                       conf=NOTIFICATION_FILENAME,
-                                       silent=True)
+                if not "The access token expired, reason: None" in str(error) and SEND_NOTIFICATION_ON_ERROR:
+                    if NOTIFICATION_ENABLED:
+                        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error)} ⚠️⚠️⚠️"],
+                                           conf=NOTIFICATION_FILENAME,
+                                           silent=True)
                 log(logging.ERROR, error)
                 time.sleep(RETRY_TIME * (retries + 1))
                 lost_time = Spotify.auth(RETRY_TIME, lost_time)
@@ -331,9 +340,10 @@ while True:
                 break
             except Exception as error2:
                 retries += 1
-                if not "The access token expired, reason: None" in str(error2):
-                    telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error2)} ⚠️⚠️⚠️"],
-                                       conf=NOTIFICATION_FILENAME,
-                                       silent=True)
+                if not "The access token expired, reason: None" in str(error2) and SEND_NOTIFICATION_ON_ERROR:
+                    if NOTIFICATION_ENABLED:
+                        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: ERROR: {str(error2)} ⚠️⚠️⚠️"],
+                                           conf=NOTIFICATION_FILENAME,
+                                           silent=True)
                 log(logging.ERROR, error2)
                 time.sleep(RETRY_TIME * (retries + 1))      

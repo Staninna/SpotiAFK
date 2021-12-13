@@ -21,7 +21,12 @@ TIME_BETWEEN_CHEAKS = 30
 RETRY_TIME = 10
 
 # Notifications
+NOTIFICATION_ENABLED = True
 NOTIFICATION_FILENAME = "telegram.conf"
+START_PROGRAM_NOTIFICATION = "Starting program 🏁"
+START_PLAYING_NOTIFICATION = "Started playing 🟩"
+STOP_PLAYING_NOTIFICATION = "Stopped playing 🟥"
+SEND_NOTIFICATION_ON_ERROR = True
 
 # Timelogging
 TIMELOG_FILENAME = "time.txt"
