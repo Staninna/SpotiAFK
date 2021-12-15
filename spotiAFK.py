@@ -104,8 +104,9 @@ def can_i_play(succes_checks    : int,
     return succes_checks, lost_time
 
 # Update the playlist
-def update_playlist(retry_time  : float,
-                    lost_time   : float):
+def update_playlist(retry_time      : float,
+                    lost_time       : float,
+                    notification    : bool = False):
     while True:
         try:
             playlists = Spotify.client.current_user_playlists()
@@ -133,7 +134,7 @@ def update_playlist(retry_time  : float,
             lost_time += RETRY_TIME
             time.sleep(retry_time)
             log(logging.INFO, "Retrying checking if server could play tracks")
-    if NOTIFICATION_ENABLED:
+    if NOTIFICATION_ENABLED and notification:
         telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: {UPDATE_PALYLIST_NOTIFICATION}"],
                            conf=NOTIFICATION_FILENAME,
                            silent=True)
@@ -316,7 +317,7 @@ while True:
                 time.sleep(RETRY_TIME * (retries + 1))
                 lost_time = Spotify.auth(RETRY_TIME, lost_time)
                 server_ids, lost_time = get_server_ids(lost_time)
-                tracks, lost_time = update_playlist(RETRY_TIME, lost_time)
+                tracks, lost_time = update_playlist(RETRY_TIME, lost_time, True)
                 retries = 0
                 break
             except Exception as error2:
