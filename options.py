@@ -23,6 +23,7 @@ RETRY_TIME = 10
 # Notifications
 NOTIFICATION_ENABLED = True
 NOTIFICATION_FILENAME = "telegram.conf"
+UPDATE_PALYLIST_NOTIFICATION = "Updated playlist 🎵"
 START_PROGRAM_NOTIFICATION = "Starting program 🏁"
 START_PLAYING_NOTIFICATION = "Started playing 🟩"
 STOP_PLAYING_NOTIFICATION = "Stopped playing 🟥"

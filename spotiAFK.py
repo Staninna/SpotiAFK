@@ -1,41 +1,18 @@
 # Imports
 import os
-import sys
 import time
 import random
-import options
-import spotipy
 import logging
+import spotipy
 import datetime
 import requests
 import telegram_send
 
-# Variables
+from options import *
 
-# API variables
-USERNAME = options.USERNAME
-CLIENT_ID = options.CLIENT_ID
-CLIENT_SECRET = options.CLIENT_SECRET
-REDIRECT_URI = options.REDIRECT_URI
+# Variables
 TOKEN_PATH = f"{os.path.dirname(os.path.realpath(__file__))}/token-{USERNAME}.dat" 
 SCOPE = "user-modify-playback-state playlist-read-private user-read-playback-state"
-
-# App variables
-NOTIFICATION_FILENAME = options.NOTIFICATION_FILENAME
-SERVER_NAMES = options.SERVER_NAMES
-PLAYLIST_NAME = options.PLAYLIST_NAME
-TIME_BETWEEN_CHEAKS = options.TIME_BETWEEN_CHEAKS
-CHEAKS_BEFORE_PLAYING = options.CHEAKS_BEFORE_PLAYING
-RANDOM_ORDER_TRACKS = options.RANDOM_ORDER_TRACKS
-SKIP_SONGS = options.SKIP_SONGS
-SKIP_DELAY = options.SKIP_DELAY
-RETRY_TIME = options.RETRY_TIME
-TIMELOG_FILENAME = options.TIMELOG_FILENAME
-NOTIFICATION_ENABLED = options.NOTIFICATION_ENABLED
-START_PROGRAM_NOTIFICATION = options.START_PROGRAM_NOTIFICATION
-START_PLAYING_NOTIFICATION = options.START_PLAYING_NOTIFICATION
-STOP_PLAYING_NOTIFICATION = options.STOP_PLAYING_NOTIFICATION
-SEND_NOTIFICATION_ON_ERROR = options.SEND_NOTIFICATION_ON_ERROR
 
 # Classes
 
@@ -156,6 +133,10 @@ def update_playlist(retry_time  : float,
             lost_time += RETRY_TIME
             time.sleep(retry_time)
             log(logging.INFO, "Retrying checking if server could play tracks")
+    if NOTIFICATION_ENABLED:
+        telegram_send.send(messages=[f"{str(datetime.datetime.now()).split('.')[0]}: INFO: {UPDATE_PALYLIST_NOTIFICATION}"],
+                           conf=NOTIFICATION_FILENAME,
+                           silent=True)
     return tracks_to_play, lost_time
 
 # Get ids of play servers
@@ -241,10 +222,10 @@ while True:
         log(logging.INFO, f"Checked if i could play success rate is [{succes_checks}/{CHEAKS_BEFORE_PLAYING}]")
         if played:
             played = False
-        
+
         # Main play loop
         while succes_checks >= CHEAKS_BEFORE_PLAYING:
-            
+
             # If not logged that program is playing do so
             if not played:
                 log(logging.INFO, "Started playing tracks")
@@ -257,7 +238,7 @@ while True:
                                            silent=True)
                         last_message_send = "Started playing track"
                 played = True
-            
+
             # Transfering playback to server
             while True:
                 try:
@@ -268,10 +249,10 @@ while True:
                     lost_time += RETRY_TIME
                     time.sleep(RETRY_TIME)
                     log(logging.INFO, "Retrying transfering playback to server")
-            
+
             # Getting all songs from the afk playlist
             tracks, lost_time = update_playlist(RETRY_TIME, lost_time)
-            
+
             # Looping over songs
             for track, duration, name in tracks:
                 if can_i_play(0, RETRY_TIME, lost_time)[0] == 0:
@@ -287,7 +268,7 @@ while True:
                                                silent=True)
                             last_message_send = "Stopped playing tracks"
                     break
-                
+
                 # Add song to queue
                 while True:
                     try:
@@ -298,7 +279,7 @@ while True:
                         lost_time += RETRY_TIME
                         time.sleep(RETRY_TIME)
                         log(logging.INFO, "Retrying adding track to queue")
-                
+
                 # Play the song
                 while True:
                     try:
@@ -309,19 +290,19 @@ while True:
                         lost_time += RETRY_TIME
                         time.sleep(RETRY_TIME)
                         log(logging.INFO, "Retrying skipping track")
-                
+
                 # Wait till song is done
                 if SKIP_SONGS:
                     time.sleep(SKIP_DELAY)
                 else:
                     time.sleep(duration)
                 log(logging.INFO, f"Played {name}")
-            
+
             # If looped over all songs wait
             time.sleep(TIME_BETWEEN_CHEAKS)
             succes_checks, lost_time = can_i_play(succes_checks, RETRY_TIME, lost_time)
-    
-    
+
+
     # Reset and log some things on a error
     except Exception as error:
         while True:
