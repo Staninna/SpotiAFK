@@ -4,6 +4,18 @@
     <img width="80%" src="https://i.imgur.com/VTRXwHa.png">      
 </div>
 
+### 3. Running the program
+
+1.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2.  **Run the script:**
+    ```bash
+    python3.9 spotiAFK.py
+    ```
+
 <br>
 
 <div align="center">
@@ -131,6 +143,14 @@ TIMELOG_FILENAME = "time.txt"
     | USERNAME      | Your spotify username                    | USERNAME                                         | Your spotify username             |
     | PLAYLIST_NAME | The name of the playlist you want to use | PLAYLIST                                         | Your playlist name                |
     | SERVER_NAMES  | The names of devices you want to use     | ["SERVER-1", "SERVER-2", "SERVER-3", "SERVER-4"] | Python list with names of devices |
+
+    > **What is a "server"?**
+    >
+    > In this application, a "server" is any device (like your computer, phone, or smart speaker) that can play music from your Spotify account.
+    >
+    > You need to tell the script which device to use by editing the `SERVER_NAMES` list in `options.py`. To find the correct name for your device, open the Spotify app, click on the "Connect to a device" icon, and use the name you see there.
+    >
+    > **Hint:** A great way to use this is with a Raspberry Pi running `spotifyd`. This allows you to have a dedicated, low-power device to act as a "server" without needing speakers connected to it.
 
 4.  Checks
 
