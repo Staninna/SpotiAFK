@@ -1,3 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spotiafk"
+version = "2.0.0"
+description = "Plays a Spotify playlist on your devices while you're away"
+requires-python = ">=3.11"
+dependencies = ["spotipy~=2.24", "telegram-send"]
+
+[project.scripts]
+spotiafk = "spotiafk.cli:main"
+
+[tool.setuptools]
+packages = ["spotiafk"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
@@ -13,9 +30,7 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-# options.py is gitignored (user credentials), so tell ruff it's first-party
-# even when the file is absent, keeping import order identical locally and in CI.
-known-first-party = ["options", "spotiafk"]
+known-first-party = ["spotiafk"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

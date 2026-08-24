@@ -1,4 +1,5 @@
 # Credentials & tokens — never commit these
+spotiafk.toml
 options.py
 telegram.conf
 token-*.dat
@@ -11,5 +12,6 @@ time.txt
 # Python
 __pycache__/
 *.pyc
+*.egg-info/
 .venv/
 venv/

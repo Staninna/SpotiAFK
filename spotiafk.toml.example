@@ -1,0 +1,24 @@
+# SpotiAFK configuration. 'spotiafk setup' writes this for you; only the
+# first four values are required, everything else has these defaults.
+
+playlist = "PLAYLIST NAME"
+play_on = ["DEVICE-1"]          # Spotify device names to play on
+
+[spotify]
+client_id = "YOUR-CLIENT-ID"
+client_secret = "YOUR-CLIENT-SECRET"
+# redirect_uri = "http://127.0.0.1:8888/callback/"
+
+# [playback]
+# skip_after = 35               # seconds per track (min 31); 0 plays tracks in full
+# shuffle = true
+
+# [checks]
+# idle_checks = 5               # consecutive free checks before playing
+# interval = 30                 # seconds between checks
+# retry = 10                    # seconds before retrying after an error
+
+# [telegram]                    # optional; omit the section for no notifications
+# bot_token = "..."
+# chat_id = "..."
+# notify_on_error = true

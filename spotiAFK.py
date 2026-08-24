@@ -1,6 +1,8 @@
-"""Thin entry point kept for compatibility; the app lives in the spotiafk package."""
+"""Legacy entry point kept for compatibility: same as 'spotiafk run'."""
 
-from spotiafk.main import main
+import sys
+
+from spotiafk.cli import main
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(["run"]))

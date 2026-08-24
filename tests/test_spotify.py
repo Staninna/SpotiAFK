@@ -1,4 +1,4 @@
-import options
+from spotiafk.config import Config
 from spotiafk.spotify import get_tracks
 
 
@@ -13,26 +13,26 @@ class FakeClient:
         self.entries = entries
 
     def current_user_playlists(self):
-        return {"items": [{"name": options.PLAYLIST_NAME, "id": "pl-1"}], "next": None}
+        return {"items": [{"name": "AFK", "id": "pl-1"}], "next": None}
 
     def playlist_items(self, playlist_id):
         return {"items": self.entries, "next": None}
 
 
-def test_new_api_shape_uses_item_key(monkeypatch):
-    monkeypatch.setattr(options, "RANDOM_ORDER_TRACKS", False)
+CFG = Config(playlist="AFK", shuffle=False)
+
+
+def test_new_api_shape_uses_item_key():
     client = FakeClient([{"item": make_track("a")}, {"item": make_track("b")}])
-    assert [name for _, _, name in get_tracks(client)] == ["a", "b"]
+    assert [name for _, _, name in get_tracks(client, CFG)] == ["a", "b"]
 
 
-def test_old_api_shape_uses_track_key(monkeypatch):
-    monkeypatch.setattr(options, "RANDOM_ORDER_TRACKS", False)
+def test_old_api_shape_uses_track_key():
     client = FakeClient([{"track": make_track("a")}])
-    assert [name for _, _, name in get_tracks(client)] == ["a"]
+    assert [name for _, _, name in get_tracks(client, CFG)] == ["a"]
 
 
-def test_unplayable_entries_are_skipped(monkeypatch):
-    monkeypatch.setattr(options, "RANDOM_ORDER_TRACKS", False)
+def test_unplayable_entries_are_skipped():
     client = FakeClient(
         [
             {"item": None},  # removed track
@@ -40,4 +40,4 @@ def test_unplayable_entries_are_skipped(monkeypatch):
             {"item": make_track("keep")},
         ]
     )
-    assert [name for _, _, name in get_tracks(client)] == ["keep"]
+    assert [name for _, _, name in get_tracks(client, CFG)] == ["keep"]

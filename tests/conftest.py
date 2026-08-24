@@ -1,20 +1,7 @@
 """Stub the external dependencies so the test suite runs without them installed."""
 
-import importlib.util
-import pathlib
 import sys
 import types
-
-# options.py is gitignored (it holds the user's credentials); in CI and fresh
-# clones, load the committed template in its place.
-try:
-    import options  # noqa: F401
-except ImportError:
-    example = pathlib.Path(__file__).resolve().parent.parent / "options.example.py"
-    spec = importlib.util.spec_from_file_location("options", example)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    sys.modules["options"] = module
 
 
 def _ensure(name):
@@ -35,10 +22,14 @@ if not hasattr(spotipy, "SpotifyException"):
             self.http_status = http_status
             self.headers = headers
 
+    class SpotifyOauthError(Exception):
+        pass
+
     spotipy.SpotifyException = SpotifyException
     spotipy.Spotify = object
     oauth2 = types.ModuleType("spotipy.oauth2")
     oauth2.SpotifyOAuth = object
+    oauth2.SpotifyOauthError = SpotifyOauthError
     spotipy.oauth2 = oauth2
     sys.modules["spotipy.oauth2"] = oauth2
 
