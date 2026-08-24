@@ -43,7 +43,7 @@ Prefer to do it by hand? Follow the steps below.
 
     1. Copy the template: `cp telegram.conf.example telegram.conf`
 
-    2. Fill in your bot token and chat id (get your chat id by messaging [@userinfobot](https://t.me/userinfobot)), or generate the file with `python3 -m telegram_send --configure --config telegram.conf` and follow the instructions
+    2. Fill in your bot token and chat id (get your chat id by messaging [@userinfobot](https://t.me/userinfobot)), or generate the file with `telegram-send --configure --config telegram.conf` (after installing dependencies) and follow the instructions
 
     3. Keep it private: `chmod 600 telegram.conf`
 
@@ -71,7 +71,7 @@ cp options.example.py options.py
 
     1. Get your API tokens
 
-        1. Go to the [Spotify developer dashboard](https://developer.spotify.com/dashboard/applications)
+        1. Go to the [Spotify developer dashboard](https://developer.spotify.com/dashboard)
 
         2. Log in with your Spotify account
 
@@ -84,7 +84,7 @@ cp options.example.py options.py
            DON'T SHARE THOSE STRINGS WITH ANYONE<br>
            ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
 
-        6. Click on `edit settings` and add your redirection URL by `redirect uris` than click `save`
+        6. In your app's `Settings`, add `http://127.0.0.1:8888/callback/` under `Redirect URIs`, then click `save` (Spotify no longer accepts `localhost` here)
 
     |               | Function                          | Default                         | Format                                           |
     | ------------- | --------------------------------- | ------------------------------- | ------------------------------------------------ |
@@ -126,7 +126,7 @@ cp options.example.py options.py
     |                              | Function                                                         | Default             | Format                                |
     | ---------------------------- | ---------------------------------------------------------------- | ------------------- | ------------------------------------- |
     | NOTIFICATION_ENABLED         | If notifications are sent at all                                 | True                | True/False                            |
-    | NOTIFICATION_FILENAME        | The name of the notification config file                         | telegram.conf       | Any string preferred with a extension |
+    | NOTIFICATION_FILENAME        | The name of the notification config file                         | telegram.conf       | Any string, preferably with an extension |
     | UPDATE_PLAYLIST_NOTIFICATION | Text of notification when the playlist is refreshed              | Updated playlist 🎵 | Any string                            |
     | START_PROGRAM_NOTIFICATION   | Text of notification when program starts                         | Starting program 🏁 | Any string                            |
     | START_PLAYING_NOTIFICATION   | Text of notification when the music starts playing on the server | Started playing 🟩  | Any string                            |
@@ -137,7 +137,7 @@ cp options.example.py options.py
 
     |                  | Function                     | Default  | Format                                |
     | ---------------- | ---------------------------- | -------- | ------------------------------------- |
-    | TIMELOG_FILENAME | The name of the timelog file | time.txt | Any string preferred with a extension |
+    | TIMELOG_FILENAME | The name of the timelog file | time.txt | Any string, preferably with an extension |
 
 ### 3. Running the program
 
@@ -152,6 +152,8 @@ cp options.example.py options.py
     ```bash
     pipenv run python3 spotiAFK.py
     ```
+
+    The first run opens a Spotify page in your browser asking you to authorize the app once; after that the token is cached in `token-<username>.dat`.
 
     Or use the restarter scripts, which relaunch the program automatically if it crashes (a clean Ctrl-C stops it for good):
 
@@ -176,6 +178,7 @@ CI runs both on every push and pull request.
 <br>
 
 <div align="center">
+    <img alt="CI" src="https://github.com/Staninna/SpotiAFK/actions/workflows/ci.yml/badge.svg">
     <img alt="GitHub code size" src="https://img.shields.io/github/languages/code-size/staninna/spotiAFK">
     <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Staninna/spotiAFK">
 </div>
