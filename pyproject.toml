@@ -12,6 +12,11 @@ select = [
     "SIM", # simplifications
 ]
 
+[tool.ruff.lint.isort]
+# options.py is gitignored (user credentials), so tell ruff it's first-party
+# even when the file is absent, keeping import order identical locally and in CI.
+known-first-party = ["options", "spotiafk"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
