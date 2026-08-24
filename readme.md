@@ -84,7 +84,7 @@ Prefer to do it by hand? Follow the steps below.
     | ------------- | --------------------------------- | ------------------------------- | ------------------------------------------------ |
     | CLIENT_ID     | Spotify application client id     | XXXXX                           | Your client id                                   |
     | CLIENT_SECRET | Spotify application client secret | XXXXX                           | Your client secret                               |
-    | REDIRECT_URI  | Your redirect uri                 | http://localhost:8888/callback/ | Your redirect URI you added into the spotify API |
+    | REDIRECT_URI  | Your redirect uri                 | http://127.0.0.1:8888/callback/ | Your redirect URI you added into the spotify API |
 
 3.  Account
 
