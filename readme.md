@@ -14,6 +14,14 @@ It uses the Spotify API to check if you are listening to music and if you don't 
 
 ## Setting it up
 
+The fastest way is the interactive wizard, which walks you through the Spotify app, your account details, and the optional Telegram bot, and writes `options.py` and `telegram.conf` for you:
+
+```bash
+./scripts/setup-wizard.sh
+```
+
+Prefer to do it by hand? Follow the steps below.
+
 ### 1. Configure telegram bot for notifications
 
 1.  Make the bot
