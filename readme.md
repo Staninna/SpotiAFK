@@ -148,6 +148,17 @@ It uses the Spotify API to check if you are listening to music and if you don't 
 
 The program writes its logs to `logs/` and the total played time (in seconds) to `time.txt`, both next to the script.
 
+## Development
+
+The code lives in the `spotiafk/` package; `spotiAFK.py` is just the entry point. Install the dev tools with `pipenv install --dev`, then:
+
+```bash
+pipenv run pytest        # run the test suite
+pipenv run ruff check .  # lint
+```
+
+CI runs both on every push and pull request.
+
 <br>
 
 <div align="center">

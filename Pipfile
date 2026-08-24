@@ -9,6 +9,8 @@ telegram-send = "*"
 requests = ">=2.32"
 
 [dev-packages]
+pytest = "*"
+ruff = "*"
 
 [requires]
 python_version = "3.11"
