@@ -209,6 +209,9 @@ write_opt_str() {
   write_opt "$1" "$(python3 -c 'import sys; print(repr(sys.argv[1]))' "$2")"
 }
 
+# options.py is gitignored; start from the committed template on first run.
+[[ -f "$OPTIONS_FILE" ]] || cp "$REPO_DIR/options.example.py" "$OPTIONS_FILE"
+
 banner "SpotiAFK setup"
 
 # ── Stage 1: Spotify developer app ────────────────────────────────────────
@@ -228,7 +231,7 @@ ask REDIRECT_URI "Redirect URI [Enter for http://127.0.0.1:8888/callback/]:"
 write_opt_str CLIENT_ID "$CLIENT_ID"
 write_opt_str CLIENT_SECRET "$CLIENT_SECRET"
 write_opt_str REDIRECT_URI "$REDIRECT_URI"
-note "options.py is not in .gitignore, so don't commit it now that it holds your secret."
+note "options.py is gitignored, so your secret stays out of git."
 
 # ── Stage 2: account, playlist, and devices ───────────────────────────────
 stage "Account, playlist, and devices"

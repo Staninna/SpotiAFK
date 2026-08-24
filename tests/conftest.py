@@ -1,7 +1,20 @@
 """Stub the external dependencies so the test suite runs without them installed."""
 
+import importlib.util
+import pathlib
 import sys
 import types
+
+# options.py is gitignored (it holds the user's credentials); in CI and fresh
+# clones, load the committed template in its place.
+try:
+    import options  # noqa: F401
+except ImportError:
+    example = pathlib.Path(__file__).resolve().parent.parent / "options.example.py"
+    spec = importlib.util.spec_from_file_location("options", example)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules["options"] = module
 
 
 def _ensure(name):

@@ -1,4 +1,5 @@
 # Credentials & tokens — never commit these
+options.py
 telegram.conf
 token-*.dat
 .cache*

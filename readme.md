@@ -53,6 +53,12 @@ Prefer to do it by hand? Follow the steps below.
 
 ### 2. Configure `options.py`
 
+Copy the template first (`options.py` itself is gitignored so your credentials stay out of git):
+
+```bash
+cp options.example.py options.py
+```
+
 1.  Playing
 
     |                     | Function                                                                | Default | Format               |
