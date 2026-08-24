@@ -55,7 +55,7 @@ def main() -> None:
             is_auth_error = (
                 isinstance(error, spotipy.SpotifyException) and error.http_status == 401
             )
-            logger.error("%s: %s", type(error).__name__, error)
+            logger.exception("%s: %s", type(error).__name__, error)
             if config.SEND_NOTIFICATION_ON_ERROR and not is_auth_error:
                 notify("ERROR", f"{type(error).__name__}: {error} ⚠️⚠️⚠️")
             time.sleep(min(config.RETRY_TIME * 2 ** (retries - 1), config.MAX_BACKOFF))

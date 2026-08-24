@@ -85,16 +85,17 @@ def get_tracks(client: spotipy.Spotify, send_notification: bool = False) -> list
         raise RuntimeError(f"Playlist {config.PLAYLIST_NAME!r} was not found on this account")
 
     tracks_to_play = []
-    tracks = client.playlist(playlist_id)["tracks"]
-    while tracks:
-        for item in tracks["items"]:
-            track = item.get("track")
+    page = client.playlist_items(playlist_id)
+    while page:
+        for entry in page["items"]:
+            # the API renamed the entry key from "track" to "item"; accept both
+            track = entry.get("item") or entry.get("track")
             if not track or not track.get("uri") or track.get("duration_ms") is None:
                 continue  # removed/unavailable tracks and episodes
             tracks_to_play.append(
                 [track["uri"], track["duration_ms"] / config.MS_PER_SECOND, track["name"]]
             )
-        tracks = client.next(tracks) if tracks["next"] else None
+        page = client.next(page) if page["next"] else None
 
     if config.RANDOM_ORDER_TRACKS:
         random.shuffle(tracks_to_play)
