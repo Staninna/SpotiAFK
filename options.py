@@ -1,6 +1,6 @@
 # Playing
 SKIP_SONGS = True
-SKIP_DELAY = 35
+SKIP_DELAY = 35  # seconds; > 30 so Spotify counts the play as a stream
 RANDOM_ORDER_TRACKS = True
 
 # API
@@ -14,8 +14,8 @@ PLAYLIST_NAME = "PLAYLIST"
 SERVER_NAMES = ["SERVER-1", "SERVER-2", "SERVER-3", "SERVER-4"]
 
 # Checks
-CHEAKS_BEFORE_PLAYING = 5
-TIME_BETWEEN_CHEAKS = 30
+CHECKS_BEFORE_PLAYING = 5
+TIME_BETWEEN_CHECKS = 30
 
 # Errors
 RETRY_TIME = 10
@@ -23,7 +23,7 @@ RETRY_TIME = 10
 # Notifications
 NOTIFICATION_ENABLED = True
 NOTIFICATION_FILENAME = "telegram.conf"
-UPDATE_PALYLIST_NOTIFICATION = "Updated playlist 🎵"
+UPDATE_PLAYLIST_NOTIFICATION = "Updated playlist 🎵"
 START_PROGRAM_NOTIFICATION = "Starting program 🏁"
 START_PLAYING_NOTIFICATION = "Started playing 🟩"
 STOP_PLAYING_NOTIFICATION = "Stopped playing 🟥"
