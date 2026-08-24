@@ -1,0 +1,13 @@
+# Credentials & tokens — never commit these
+telegram.conf
+token-*.dat
+.cache*
+
+# Runtime output
+logs/
+time.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
