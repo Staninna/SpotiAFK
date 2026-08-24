@@ -1,28 +1,7 @@
 # spotiAFK
 
 <div align="center">
-    <img width="80%" src="https://i.imgur.com/VTRXwHa.png">      
-</div>
-
-### 3. Running the program
-
-1.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-2.  **Run the script:**
-    ```bash
-    python3.9 spotiAFK.py
-    ```
-
-<br>
-
-<div align="center">
-    <img alt="GitHub code size" src="https://img.shields.io/github/languages/code-size/staninna/spotiAFK">
-    <img alt="GitHub Pipenv locked Python version" src="https://img.shields.io/github/pipenv/locked/python-version/Staninna/spotiAFK">
-    <img alt="Lines of code" src="https://img.shields.io/tokei/lines/github/Staninna/spotiAFK">
-    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Staninna/spotiAFK">
+    <img width="80%" src="https://i.imgur.com/VTRXwHa.png">
 </div>
 
 ## What is it?
@@ -41,7 +20,7 @@ It uses the Spotify API to check if you are listening to music and if you don't 
 
     1. Open a dm with [BotFather](https://t.me/BotFather) and click on start
 
-    2. Send a message with the text`/newbot` and follow the instructions
+    2. Send a message with the text `/newbot` and follow the instructions
 
     3. Send a message with the text `/mybots` and select the bot we just created
 
@@ -54,54 +33,17 @@ It uses the Spotify API to check if you are listening to music and if you don't 
 
 2.  Make `telegram.conf`
 
-    1. In the terminal run<br>
-       `sudo python3.9 -m telegram-send -c -g`
+    1. Copy the template: `cp telegram.conf.example telegram.conf`
 
-    2. Paste your API token you just copied
+    2. Fill in your bot token and chat id (get your chat id by messaging [@userinfobot](https://t.me/userinfobot)), or generate the file with `python3 -m telegram_send --configure --config telegram.conf` and follow the instructions
 
-    3. Send the password to your telegram bot click first on `start`
+    3. Keep it private: `chmod 600 telegram.conf`
 
-    4. In the terminal run<br>
-       `sudo mv /etc/telegram-send.conf telegram.conf`
+    > `telegram.conf`, your Spotify token cache, `logs/` and `time.txt` are all in `.gitignore` so credentials and runtime output never get committed.
 
-### 2. Configure `option.py`
+    Don't want notifications? Set `NOTIFICATION_ENABLED = False` in `options.py` and skip this step.
 
-`options.py`
-
-```py
-# Playing
-SKIP_SONGS = True
-SKIP_DELAY = 35
-RANDOM_ORDER_TRACKS = True
-
-# API
-CLIENT_ID = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-CLIENT_SECRET = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-REDIRECT_URI = "http://localhost:8888/callback/"
-
-# Account
-USERNAME = "USERNAME"
-PLAYLIST_NAME = "PLAYLIST"
-SERVER_NAMES = ["SERVER-1", "SERVER-2", "SERVER-3", "SERVER-4"]
-
-# Checks
-CHEAKS_BEFORE_PLAYING = 5
-TIME_BETWEEN_CHEAKS = 30
-
-# Errors
-RETRY_TIME = 10
-
-# Notifications
-NOTIFICATION_ENABLED = True
-NOTIFICATION_FILENAME = "telegram.conf"
-START_PROGRAM_NOTIFICATION = "Starting program 🏁"
-START_PLAYING_NOTIFICATION = "Started playing 🟩"
-STOP_PLAYING_NOTIFICATION = "Stopped playing 🟥"
-SEND_NOTIFICATION_ON_ERROR = True
-
-# Timelogging
-TIMELOG_FILENAME = "time.txt"
-```
+### 2. Configure `options.py`
 
 1.  Playing
 
@@ -156,8 +98,8 @@ TIMELOG_FILENAME = "time.txt"
 
     |                       | Function                                                           | Default | Format              |
     | --------------------- | ------------------------------------------------------------------ | ------- | ------------------- |
-    | CHEAKS_BEFORE_PLAYING | Amount of checks if your account is free to use before playing     | 5       | All numbers above 0 |
-    | TIME_BETWEEN_CHEAKS   | Amount of time in seconds between cheaks if account is free to use | 35      | All numbers above 0 |
+    | CHECKS_BEFORE_PLAYING | Amount of checks if your account is free to use before playing     | 5       | All numbers above 0 |
+    | TIME_BETWEEN_CHECKS   | Amount of time in seconds between checks if account is free to use | 30      | All numbers above 0 |
 
 5.  Errors
 
@@ -167,16 +109,48 @@ TIMELOG_FILENAME = "time.txt"
 
 6.  Notifications
 
-    |                            | Function                                                         | Default             | Format                                |
-    | -------------------------- | ---------------------------------------------------------------- | ------------------- | ------------------------------------- |
-    | NOTIFICATION_FILENAME      | The name of the notification config file                         | telegram.conf       | Any string preferred with a extension |
-    | START_PROGRAM_NOTIFICATION | Text of notification when program starts                         | Starting program 🏁 | Any string                            |
-    | START_PLAYING_NOTIFICATION | Text of notification when the music starts playing on the server | Started playing 🟩  | Any string                            |
-    | NOTIFICATION_FILENAME      | Text of notification when the music stops playing on the server  | Stopped playing 🟥  | Any string                            |
-    | SEND_NOTIFICATION_ON_ERROR | If you want an error notification                                | True                | True/False                            |
+    |                              | Function                                                         | Default             | Format                                |
+    | ---------------------------- | ---------------------------------------------------------------- | ------------------- | ------------------------------------- |
+    | NOTIFICATION_ENABLED         | If notifications are sent at all                                 | True                | True/False                            |
+    | NOTIFICATION_FILENAME        | The name of the notification config file                         | telegram.conf       | Any string preferred with a extension |
+    | UPDATE_PLAYLIST_NOTIFICATION | Text of notification when the playlist is refreshed              | Updated playlist 🎵 | Any string                            |
+    | START_PROGRAM_NOTIFICATION   | Text of notification when program starts                         | Starting program 🏁 | Any string                            |
+    | START_PLAYING_NOTIFICATION   | Text of notification when the music starts playing on the server | Started playing 🟩  | Any string                            |
+    | STOP_PLAYING_NOTIFICATION    | Text of notification when the music stops playing on the server  | Stopped playing 🟥  | Any string                            |
+    | SEND_NOTIFICATION_ON_ERROR   | If you want an error notification                                | True                | True/False                            |
 
 7.  Timelogging
 
     |                  | Function                     | Default  | Format                                |
     | ---------------- | ---------------------------- | -------- | ------------------------------------- |
     | TIMELOG_FILENAME | The name of the timelog file | time.txt | Any string preferred with a extension |
+
+### 3. Running the program
+
+1.  **Install dependencies:**
+
+    ```bash
+    pipenv install
+    ```
+
+2.  **Run the script:**
+
+    ```bash
+    pipenv run python3 spotiAFK.py
+    ```
+
+    Or use the restarter scripts, which relaunch the program automatically if it crashes (a clean Ctrl-C stops it for good):
+
+    ```bash
+    ./restarter.sh        # Linux/macOS
+    restarter.bat         # Windows
+    ```
+
+The program writes its logs to `logs/` and the total played time (in seconds) to `time.txt`, both next to the script.
+
+<br>
+
+<div align="center">
+    <img alt="GitHub code size" src="https://img.shields.io/github/languages/code-size/staninna/spotiAFK">
+    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Staninna/spotiAFK">
+</div>
