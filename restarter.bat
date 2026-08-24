@@ -1,13 +1,10 @@
 @echo off
 setlocal EnableExtensions
+cd /d "%~dp0"
 
-:start_python_files
-start "1st" "spotiAFK.py"
-
-:check_python_files
-call:infinite 1st spotiAFK.py
-goto:check_python_files
-
-:infinite
-tasklist /FI "WINDOWTITLE eq %1 - %2" | findstr /c:PID > nul
-if %errorlevel% EQU 1 (start "%1" "%2")
+:loop
+python spotiAFK.py
+if %errorlevel% EQU 0 goto :eof
+echo spotiAFK crashed, restarting in 5 seconds...
+timeout /t 5 /nobreak > nul
+goto :loop
