@@ -12,9 +12,9 @@ import spotipy
 from spotiafk import config, timelog
 from spotiafk.notifications import notify
 from spotiafk.session import Session
-from spotiafk.spotify import get_server_ids, make_client
+from spotiafk.spotify import make_client
 
-logger = logging.getLogger("spotiAFK")
+logger = logging.getLogger(__name__)
 
 
 def setup_logging() -> None:
@@ -38,8 +38,7 @@ def main() -> None:
     if not os.path.isfile(config.TIMELOG_PATH):
         timelog.write_total(0.0)
 
-    client = make_client()
-    session = Session(client)
+    session = Session(make_client())
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
 
     retries = 0
@@ -60,7 +59,3 @@ def main() -> None:
             if config.SEND_NOTIFICATION_ON_ERROR and not is_auth_error:
                 notify("ERROR", f"{type(error).__name__}: {error} ⚠️⚠️⚠️")
             time.sleep(min(config.RETRY_TIME * 2 ** (retries - 1), config.MAX_BACKOFF))
-            try:
-                session.server_ids = get_server_ids(client)
-            except Exception as recovery_error:
-                logger.error("Recovery failed: %s", recovery_error)

@@ -7,7 +7,7 @@ import telegram_send
 
 from spotiafk import config
 
-logger = logging.getLogger("spotiAFK")
+logger = logging.getLogger(__name__)
 
 
 def notify(level: str, message: str) -> None:
